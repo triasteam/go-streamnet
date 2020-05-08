@@ -1,2 +1,2 @@
 # StreamNet-go
-StreamNet implented in go language.
+StreamNet implemented in Golang.
