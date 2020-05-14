@@ -113,3 +113,19 @@ service SayHelloService{
 &emsp;&emsp;保持golang服务开启，执行DemoTest的main方法，获得服务端响应如下:
 
     hello :倪明
+
+#### python
+
+&emsp;&emsp;首先安装python依赖包:
+
+	pip install grpcio
+	pip install protobuf
+	pip install grpcio_tools
+
+&emsp;&emsp;使用文章开头定义好的proto文件，生成对应的py代码，包含service_pb2.py和service_pb2_grpc.py两个文件
+
+	python -m grpc_tools.protoc -I ./ --python_out=./ --grpc_python_out=./ service.proto
+
+&emsp;&emsp;保持grpc服务启动，执行main.py程序（python main.py），获得返回结果
+
+	received: hello :Tony Stack
