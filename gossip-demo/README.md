@@ -19,7 +19,7 @@ this multiaddr is :  /ip4/127.0.0.1/tcp/51864/p2p/12D3KooWB1b3qZxWJanuhtseF3DmPg
 $ curl "http://127.0.0.1:8001/addPeers?dest=/ip4/127.0.0.1/tcp/51864/p2p/12D3KooWB1b3qZxWJanuhtseF3DmPggHCtG36KZ9ixkqHtdKH9fh"
 
 # 此时8001“机器”将打印 “peer connected!”
-$ ./gossip-demo -hp 8001 -s 3
+$ ./gossip-demo -hp 8001 -s 1
 this multiaddr is :  /ip4/127.0.0.1/tcp/51847/p2p/12D3KooWE4qDcRrueTuRYWUdQZgcy7APZqBngVeXRt4Y6ytHizKV
 peer connected!
 
