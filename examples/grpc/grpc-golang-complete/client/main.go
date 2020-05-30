@@ -2,7 +2,7 @@ package main
  
 import (
 	"fmt"
-	proto "triasteam/StreamNet-go/utils/demos/grpc/grpc-golang-complete/example"
+	proto "triasteam/StreamNet-go/examples/grpc/grpc-golang-complete/example"
 //	"log"
 	"runtime"
 	"sync"
