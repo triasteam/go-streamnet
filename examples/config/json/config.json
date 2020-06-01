@@ -1,0 +1,8 @@
+{
+	"port": 10666,
+	"mysql": {
+		"url": "(27.0.0.1:3306)/biezhi",
+		"username": "root",
+		"password": "123456"
+	}
+}
