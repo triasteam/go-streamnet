@@ -9,7 +9,7 @@ import (
 // InitFilesCmd initialises a fresh Tendermint Core instance.
 var InitFilesCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize Tendermint",
+	Short: "Initialize StreamNet-Go",
 	RunE:  initFiles,
 }
 
