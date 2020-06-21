@@ -2,13 +2,27 @@ package main
 
 import (
 	"fmt"
-	cmd "github.com/triasteam/StreamNet-go/commands"
+	"net/http"
+	//cmd "github.com/triasteam/StreamNet-go/commands"
 )
+
+func SaveHandle(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "hello, save")
+}
+
+func GetHandle(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "hello, get")
+}
+
 func main() {
 	fmt.Println("hello, streamnet-go")
 
-	rootCmd := cmd.RootCmd
+	http.HandleFunc("/save", SaveHandle)
+	http.HandleFunc("/get", GetHandle)
+	http.ListenAndServe(":14700", nil)
 
+	/*
+	rootCmd := cmd.RootCmd
 	rootCmd.AddCommand(
 		cmd.InitFilesCmd,
 	)
@@ -18,7 +32,8 @@ func main() {
 	// will be considered later.
 
 	// start server
-
 	// Create & start node
 	rootCmd.AddCommand(cmd.NewRunNodeCmd())
+
+	 */
 }
