@@ -1,4 +1,4 @@
-# StreamNet-go
+# go-streamnet
 StreamNet implemented in Golang.
 
 
@@ -14,8 +14,8 @@ You'll need `go` [installed](https://golang.org/doc/install) first.
 ```bash
 mkdir -p $GOPATH/src/github.com/triasteam
 cd $GOPATH/src/github.com/triasteam
-git clone https://github.com/triasteam/StreamNet-go.git
-cd StreamNet-go
+git clone https://github.com/triasteam/go-streamnet.git
+cd go-streamnet
 ```
 
 #### Compile

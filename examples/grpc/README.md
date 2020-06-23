@@ -1,7 +1,7 @@
 ### GRPC-demo
 
-&emsp;&emsp;项目地址：https://github.com/triasteam/StreamNet-go
-&emsp;&emsp;目录结构：./StreamNet-go/examples/grpc
+&emsp;&emsp;项目地址：https://github.com/triasteam/go-streamnet
+&emsp;&emsp;目录结构：./go-streamnet/examples/grpc
 ##### proto文件
 &emsp;&emsp;首先定义一个proto文件,proto文件支持跨语言使用，golang中在proto目录下执行如下命令，会自动生成service.pb.go文件，供程序调用。
     

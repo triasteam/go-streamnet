@@ -1,6 +1,6 @@
 package store
 
-import "github.com/triasteam/StreamNet-go/types"
+import "github.com/triasteam/go-streamnet/types"
 
 type StorageProvider interface {
 	init()

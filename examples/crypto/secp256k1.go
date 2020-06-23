@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/triasteam/StreamNet-go/utils/crypto"
-	"github.com/triasteam/StreamNet-go/utils/crypto/secp256k1"
+	"github.com/triasteam/go-streamnet/utils/crypto"
+	"github.com/triasteam/go-streamnet/utils/crypto/secp256k1"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/triasteam/StreamNet-go/examples/cli/cli
+module github.com/triasteam/go-streamnet/examples/cli/cli
 
 go 1.14
 

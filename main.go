@@ -8,7 +8,7 @@ import (
 
 	//"io"
 	"net/http"
-	//cmd "github.com/triasteam/StreamNet-go/commands"
+	//cmd "github.com/triasteam/go-streamnet/commands"
 	"github.com/triasteam/go-streamnet/store"
 )
 
