@@ -2,51 +2,21 @@ package main
 
 import (
 	//"bytes"
-	"encoding/json"
+	//"fmt"
+	//"github.com/triasteam/go-streamnet/types"
+
 	"fmt"
 	"os"
 
 	//"io"
-	"net/http"
 	//cmd "github.com/triasteam/go-streamnet/commands"
+	"github.com/triasteam/go-streamnet/server"
 	"github.com/triasteam/go-streamnet/store"
+	//"github.com/triasteam/go-streamnet/store"
 )
 
-type StoreData struct {
-	Attester string
-	Attestee string
-	Score    float64
-}
-
-func SaveHandle(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-
-	var params StoreData //map[string]string
-
-	err := decoder.Decode(&params)
-	if err != nil {
-		fmt.Println("Save error: %v.", err)
-		return
-	}
-
-	fmt.Printf("POST json: username=%s, password=%s\n", params.Attester, params.Attestee)
-
-	fmt.Fprintf(w, `{"code":0, "hash": }`)
-}
-
-func GetHandle(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "hello, get")
-	query := r.URL.Query()
-
-	value := query.Get("hash")
-
-	fmt.Printf("GET: value=%s\n", value)
-
-	fmt.Fprintf(w, `{"code":0, "value": %s}`, value)
-}
-
 type StreamNet struct {
-	store *store.Storage
+	Store *store.Storage
 }
 
 var GlobalData StreamNet
@@ -58,16 +28,9 @@ func main() {
 		fmt.Printf("Open database failed!")
 		os.Exit(-1)
 	}
+	GlobalData.Store = store
 
-	GlobalData.store = store
-
-	// http server
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "hello, streamnet-go") })
-	http.HandleFunc("/save", SaveHandle)
-	http.HandleFunc("/get", GetHandle)
-
-	http.ListenAndServe(":14700", nil)
-
+	server.Start()
 	/*
 		rootCmd := cmd.RootCmd
 		rootCmd.AddCommand(

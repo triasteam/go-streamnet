@@ -13,10 +13,12 @@ const (
 )
 
 func TestInit(t *testing.T) {
-	db, err := OpenDB(DB_PATH)
+	store, err := Init(DB_PATH)
 	if err != nil {
-		log.Println("fail to open db,", nil, db)
+		t.Errorf("Open database failed!")
+		return
 	}
+	defer store.CloseDB()
 
 	_, err = os.Stat(DB_PATH)
 	if err != nil {
