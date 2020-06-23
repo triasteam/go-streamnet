@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/tecbot/gorocksdb"
 	"log"
-	"strconv"
+	//"strconv"
 )
 
 type Storage struct {
-	db           gorocksdb.DB
-	readOptions  gorocksdb.ReadOptions
-	writeOptions gorocksdb.WriteOptions
+	db           *gorocksdb.DB
+	readOptions  *gorocksdb.ReadOptions
+	writeOptions *gorocksdb.WriteOptions
 	//columnFamilies gorocksdb.ColumnFamilyHandles
 }
 
@@ -35,21 +35,21 @@ func Init(path string) (*Storage, error) {
 	}, nil
 }
 
-func (db *Storage) Save(key []byte, value []byte) error {
-	err := db.Put(db.writeOptions, key, value)
+func (store *Storage) Save(key []byte, value []byte) error {
+	err := store.db.Put(store.writeOptions, key, value)
 	if err != nil {
 		fmt.Println("Write data to RocksDB failed!")
 		return err
 	}
 }
 
-func (db *Storage) Get(key []byte) []byte {
-	slice, err := db.Get(db.readOptions, key)
+func (store *Storage) Get(key []byte) []byte {
+	slice, err := store.db.Get(store.readOptions, key)
 	if err != nil {
 		fmt.Println("Get data from RocksDB failed!")
 		return nil
 	}
-	return slice
+	return slice.Data()
 }
 
 func OpenDB(path string) (*gorocksdb.DB, error) {
