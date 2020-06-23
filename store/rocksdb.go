@@ -9,17 +9,17 @@ import (
 )
 
 type Storage struct {
-	db gorocksdb.DB
-	readOptions gorocksdb.ReadOptions
+	db           gorocksdb.DB
+	readOptions  gorocksdb.ReadOptions
 	writeOptions gorocksdb.WriteOptions
 	//columnFamilies gorocksdb.ColumnFamilyHandles
 }
 
-func Init(path string) (*Storage) {
+func Init(path string) (*Storage, error) {
 	db, err := OpenDB(path)
 	if err != nil {
-		fmt.Println("Open RocksDB failed!")
-		return nil
+		fmt.Println("Open RocksDB failed: %v!", err)
+		return nil, err
 	}
 
 	readOptions := gorocksdb.NewDefaultReadOptions()
@@ -32,10 +32,10 @@ func Init(path string) (*Storage) {
 		db,
 		readOptions,
 		writeOptions,
-	}
+	}, nil
 }
 
-func (db *Storage) Save(key []byte, value []byte) (error) {
+func (db *Storage) Save(key []byte, value []byte) error {
 	err := db.Put(db.writeOptions, key, value)
 	if err != nil {
 		fmt.Println("Write data to RocksDB failed!")
@@ -43,7 +43,7 @@ func (db *Storage) Save(key []byte, value []byte) (error) {
 	}
 }
 
-func (db *Storage) Get(key []byte) ([]byte) {
+func (db *Storage) Get(key []byte) []byte {
 	slice, err := db.Get(db.readOptions, key)
 	if err != nil {
 		fmt.Println("Get data from RocksDB failed!")
