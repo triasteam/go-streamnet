@@ -4,7 +4,7 @@ go rocksdb 安装步骤说明
 
 1. 下载依赖
 ```bash
-sudo apt update -y
+sudo apt update
 sudo apt install -y zlib1g zlib1g-dev ubuntu-snappy-cli snapd libsnappy-dev bzip2 libbz2-dev zstd libzstd-dev \
 liblz4-dev liblz4-tool 
 ```
@@ -20,10 +20,10 @@ cd rocksdb-6.10.2
 3. 编译库并将库和头文件复制到 /usr/include 和 /usr/lib下
 ```bash
 make shared_lib -j9
-cd includes
-sudo cp -r rocksdb /usr/include/
 sudo mkdir /usr/lib/rocksdb
 sudo cp librocksdb.so  librocksdb.so.6 librocksdb.so.6.10 /usr/lib/rocksdb
+cd includes
+sudo cp -r rocksdb /usr/include/
 ```
 
 4. 安装 gorocksdb

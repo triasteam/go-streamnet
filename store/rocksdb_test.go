@@ -1,13 +1,30 @@
 package store
 
 import (
+	"github.com/tecbot/gorocksdb"
 	"log"
+	"os"
 	"strconv"
+	"testing"
 )
 
 const (
 	DB_PATH = "/tmp/gorocksdb"
 )
+
+func TestInit(t *testing.T) {
+	store, err := Init(DB_PATH)
+	if err != nil {
+		t.Errorf("Open database failed!")
+		return
+	}
+	defer store.CloseDB()
+
+	_, err = os.Stat(DB_PATH)
+	if err != nil {
+		t.Errorf("Init failed!")
+	}
+}
 
 func test() {
 	db, err := OpenDB(DB_PATH)
