@@ -25,7 +25,7 @@ func main() {
 	//设置读取的配置文件名
 	v.SetConfigName("userInfo")
 	//windows环境下为%GOPATH，linux环境下为$GOPATH
-	v.AddConfigPath("/Users/trust/go/src/github.com/triasteam/StreamNet-go/examples/config/viper")
+	v.AddConfigPath("/Users/trust/go/src/github.com/triasteam/go-streamnet/examples/config/viper")
 	//设置配置文件类型
 	v.SetConfigType("yaml")
 

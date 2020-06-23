@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/spf13/cobra"
-	cfg "github.com/triasteam/StreamNet-go/config"
+	cfg "github.com/triasteam/go-streamnet/config"
 )
 
 

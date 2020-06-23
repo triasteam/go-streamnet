@@ -4,7 +4,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"log"
-	proto "triasteam/StreamNet-go/examples/grpc/grpc-golang-complete/example"
+	proto "triasteam/go-streamnet/examples/grpc/grpc-golang-complete/example"
 	"net"
 	"runtime"
 )

@@ -58,9 +58,9 @@ http.ListenAndServe(fmt.Sprintf(":%v", cfg.httpServerPort), nil)
 
 ## 部署方法
 ```
-$ git clone https://github.com/triasteam/StreamNet-go.git
+$ git clone https://github.com/triasteam/go-streamnet.git
 $ pwd
-~/StreamNet-go
+~/go-streamnet
 $ cd gossip-demo
 $ go build -o main
 $ ./main -hp 8001 -s 1

@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	//"github.com/tendermint/tendermint/libs/log"
-	cfg "github.com/triasteam/StreamNet-go/config"
+	cfg "github.com/triasteam/go-streamnet/config"
 	//"os"
 )
 
