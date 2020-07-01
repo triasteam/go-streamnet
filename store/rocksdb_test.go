@@ -22,7 +22,8 @@ func TestInit(t *testing.T) {
 	}
 
 	// open db
-	store, err := Init(DB_PATH)
+	store := Storage{}
+	err := store.Init(DB_PATH)
 	if err != nil {
 		t.Fatalf("Open database failed!")
 	}
@@ -36,7 +37,8 @@ func TestInit(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	// open db
-	store, err := Init(DB_PATH)
+	store := Storage{}
+	err := store.Init(DB_PATH)
 	if err != nil {
 		t.Fatalf("Open database failed!")
 	}
@@ -58,7 +60,8 @@ func TestSave(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	// open db
-	store, err := Init(DB_PATH)
+	store := Storage{}
+	err := store.Init(DB_PATH)
 	if err != nil {
 		t.Fatalf("Open database failed!")
 	}

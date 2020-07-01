@@ -3,9 +3,10 @@ package store
 import (
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/tecbot/gorocksdb"
 	"github.com/triasteam/go-streamnet/utils/crypto/tmhash"
-	"log"
 	//"strconv"
 )
 
@@ -16,11 +17,11 @@ type Storage struct {
 	//columnFamilies gorocksdb.ColumnFamilyHandles
 }
 
-func Init(path string) (*Storage, error) {
+func (store *Storage) Init(path string) error {
 	db, err := OpenDB(path)
 	if err != nil {
 		fmt.Printf("Open RocksDB failed: %v!\n", err)
-		return nil, err
+		return err
 	}
 
 	readOptions := gorocksdb.NewDefaultReadOptions()
@@ -29,11 +30,11 @@ func Init(path string) (*Storage, error) {
 	writeOptions := gorocksdb.NewDefaultWriteOptions()
 	writeOptions.SetSync(true)
 
-	return &Storage{
-		db,
-		readOptions,
-		writeOptions,
-	}, nil
+	store.db = db
+	store.readOptions = readOptions
+	store.writeOptions = writeOptions
+
+	return nil
 }
 
 func (store *Storage) Save(key []byte, value []byte) error {
