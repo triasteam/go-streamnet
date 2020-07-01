@@ -108,6 +108,6 @@ func OpenDB(path string) (*gorocksdb.DB, error) {
 	return db, nil
 }
 
-func (store *Storage) CloseDB() {
+func (store *Storage) Close() {
 	store.db.Close()
 }

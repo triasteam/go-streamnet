@@ -27,7 +27,7 @@ func TestInit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Open database failed!")
 	}
-	defer store.CloseDB()
+	defer store.Close()
 
 	// test directory
 	if _, err := os.Stat(DB_PATH); err != nil {
@@ -42,7 +42,7 @@ func TestSave(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Open database failed!")
 	}
-	defer store.CloseDB()
+	defer store.Close()
 
 	// save
 	err = store.Save([]byte("key"), []byte("value"))
@@ -65,7 +65,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Open database failed!")
 	}
-	defer store.CloseDB()
+	defer store.Close()
 
 	// get
 	value2, err := store.Get(key)
