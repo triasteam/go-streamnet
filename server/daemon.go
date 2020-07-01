@@ -3,17 +3,56 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/triasteam/go-streamnet/types"
+	"log"
 	"net/http"
+
+	"github.com/triasteam/go-streamnet/store"
+
+	"github.com/triasteam/go-streamnet/types"
 )
 
-func Start() {
-	// http server
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "hello, streamnet-go") })
-	http.HandleFunc("/save", SaveHandle)
-	http.HandleFunc("/get", GetHandle)
+var (
+	server *http.Server
+	db     *store.Storage
+)
 
-	http.ListenAndServe(":14700", nil)
+func Start(store *store.Storage) {
+	//TODO: find a better way to check whether server has started.
+	if server != nil {
+		log.Printf("Server already started.\n")
+		return
+	}
+
+	// set db
+	db = store
+
+	// http server
+	mux := http.NewServeMux()
+	mux.Handle("/", &gsnHandler{})
+	mux.HandleFunc("/save", SaveHandle)
+	mux.HandleFunc("/get", GetHandle)
+
+	server = &http.Server{
+		Addr:    ":14700",
+		Handler: mux,
+		//WriteTimeout: time.Second * 3,
+	}
+
+	log.Fatal(server.ListenAndServe())
+}
+
+func Stop() {
+	log.Printf("Go-StreamNet server is closing...\n")
+	err := server.Shutdown(nil)
+	if err != nil {
+		log.Printf("!!! Failed to close Go-StreamNet: %v\n", err)
+	}
+}
+
+type gsnHandler struct{}
+
+func (*gsnHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("hello, go-streamnet.\n"))
 }
 
 func SaveHandle(w http.ResponseWriter, r *http.Request) {
@@ -23,13 +62,20 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&params)
 	if err != nil {
-		fmt.Println("Save error: %v.", err)
+		fmt.Printf("Save error: %v.", err)
 		return
 	}
 
-	fmt.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
+	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
 
-	fmt.Fprintf(w, `{"code":0, "hash": }`)
+	k, err := db.SaveValue([]byte(params.String()))
+	if err != nil {
+		log.Printf("Save data to database failed: %v\n", err)
+		fmt.Fprintf(w, `{"code":-1, "hash": }`)
+		return
+	}
+
+	fmt.Fprintf(w, `{"code":0, "hash": %v}`, k)
 }
 
 func GetHandle(w http.ResponseWriter, r *http.Request) {
