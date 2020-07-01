@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tecbot/gorocksdb"
+	"github.com/triasteam/go-streamnet/utils/crypto/tmhash"
 	"log"
 	//"strconv"
 )
@@ -18,7 +19,7 @@ type Storage struct {
 func Init(path string) (*Storage, error) {
 	db, err := OpenDB(path)
 	if err != nil {
-		fmt.Println("Open RocksDB failed: %v!", err)
+		fmt.Printf("Open RocksDB failed: %v!\n", err)
 		return nil, err
 	}
 
@@ -41,15 +42,22 @@ func (store *Storage) Save(key []byte, value []byte) error {
 		fmt.Println("Write data to RocksDB failed!")
 		return err
 	}
+
+	return nil
 }
 
-func (store *Storage) Get(key []byte) []byte {
+func (store *Storage) SaveValue(value []byte) ([]byte, error) {
+	key := tmhash.Sum(value)
+	return key, store.Save(key, value)
+}
+
+func (store *Storage) Get(key []byte) ([]byte, error) {
 	slice, err := store.db.Get(store.readOptions, key)
 	if err != nil {
 		fmt.Println("Get data from RocksDB failed!")
-		return nil
+		return nil, err
 	}
-	return slice.Data()
+	return slice.Data(), nil
 }
 
 func OpenDB(path string) (*gorocksdb.DB, error) {
