@@ -1,10 +1,12 @@
 package server
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/triasteam/go-streamnet/store"
 
@@ -22,6 +24,8 @@ func Start(store *store.Storage) {
 		log.Printf("Server already started.\n")
 		return
 	}
+
+	log.Printf("Go-StreamNet server is starting...\n")
 
 	// set db
 	db = store
@@ -58,16 +62,16 @@ func (*gsnHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var params types.StoreData //map[string]string
-
+	// params
+	var params types.StoreData
 	err := decoder.Decode(&params)
 	if err != nil {
 		fmt.Printf("Save error: %v.", err)
 		return
 	}
-
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
 
+	// save data to db
 	k, err := db.SaveValue([]byte(params.String()))
 	if err != nil {
 		log.Printf("Save data to database failed: %v\n", err)
@@ -75,16 +79,57 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, `{"code":0, "hash": %v}`, k)
+	// hex encode
+	key_hex := make([]byte, hex.EncodedLen(len(k)))
+	hex.Encode(key_hex, k)
+
+	// return
+	store_reply := types.StoreReply{
+		Code: 0,
+		Hash: fmt.Sprintf("0x%s", key_hex),
+	}
+	reply, _ := json.Marshal(store_reply)
+	w.Write(reply)
 }
 
 func GetHandle(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "hello, get")
-	query := r.URL.Query()
+	decoder := json.NewDecoder(r.Body)
 
-	value := query.Get("hash")
+	// params
+	var params types.GetReq
+	err := decoder.Decode(&params)
+	if err != nil {
+		fmt.Printf("Get error: %v.", err)
+		return
+	}
+	log.Printf("POST json: Key=%s\n", params.Key)
+
+	// hex decode
+	k := strings.TrimPrefix(params.Key, "0x")
+	hash := make([]byte, hex.DecodedLen(len(k)))
+	_, err = hex.Decode(hash, []byte(k))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// get data from db
+	value, err := db.Get([]byte(hash))
+	if err != nil {
+		log.Printf("Get error: %v.", err)
+		return
+	}
+	log.Printf("Value = '%s'\n", value)
+
+	// return
+	get_reply := types.GetReply{
+		Value: string(value),
+	}
+	reply, _ := json.Marshal(get_reply)
+	w.Write(reply)
+
+	/*value := query.Get("hash")
 
 	fmt.Printf("GET: value=%s\n", value)
 
-	fmt.Fprintf(w, `{"code":0, "value": %s}`, value)
+	fmt.Fprintf(w, `{"code":0, "value": %s}`, value)*/
 }
