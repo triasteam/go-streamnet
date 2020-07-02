@@ -126,10 +126,4 @@ func GetHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	reply, _ := json.Marshal(get_reply)
 	w.Write(reply)
-
-	/*value := query.Get("hash")
-
-	fmt.Printf("GET: value=%s\n", value)
-
-	fmt.Fprintf(w, `{"code":0, "value": %s}`, value)*/
 }

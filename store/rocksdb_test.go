@@ -12,7 +12,7 @@ const (
 
 var key = []byte{}
 
-func TestInit(t *testing.T) {
+func TestInitAndClose(t *testing.T) {
 	// check directory, if exists, delete it.
 	if _, err := os.Stat(DB_PATH); err == nil {
 		t.Logf("Directory %s exists, and now it is deleted.\n", DB_PATH)
