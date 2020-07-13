@@ -33,9 +33,24 @@ make build
 to put the binary in `./build`.
 
 
-__The binary's name is '**sng**', which is standing for StreamNetGo and is shorter.__
+__The binary's name is '**gsn**', which is standing for Go-StreamNet.__
 
 ## Run
 ```bash
-./build/sng
+./build/gsn
 ```
+***Note***:
+    Now you should start another terminal to input commands, or you can start the binary background with '&'.
+
+## Client save & get
+### save
+```bash
+curl -X POST -d '{"Attester": "192.168.1.1", "Attestee": "192.168.1.2", "Score": "1"}' http://127.0.0.1:14700/save
+```
+
+### get
+```
+curl -X POST -d '{"key": 0xXXXXXXXXXXX}' http://127.0.0.1:14700/get
+```
+
+For better display, you can use `jq` to format the output.

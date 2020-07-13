@@ -1,4 +1,4 @@
-OUTPUT?=build/gosn
+OUTPUT?=build/gsn
 
 
 all: build install test

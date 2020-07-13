@@ -23,14 +23,17 @@ var GlobalData StreamNet
 
 func main() {
 	// open DB
-	store, err := store.Init("./db")
+	store := store.Storage{}
+	err := store.Init("./db")
 	if err != nil {
 		fmt.Printf("Open database failed!")
 		os.Exit(-1)
 	}
-	GlobalData.Store = store
+	GlobalData.Store = &store
 
-	server.Start()
+	// start http server
+	server.Start(&store)
+
 	/*
 		rootCmd := cmd.RootCmd
 		rootCmd.AddCommand(
