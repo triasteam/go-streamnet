@@ -20,9 +20,9 @@ cd rocksdb-6.10.2
 3. 编译库并将库和头文件复制到 /usr/include 和 /usr/lib下
 ```bash
 make shared_lib -j9
-sudo mkdir /usr/lib/rocksdb
-sudo cp librocksdb.so  librocksdb.so.6 librocksdb.so.6.10 /usr/lib/rocksdb
-cd includes
+sudo mkdir /usr/lib/
+sudo cp librocksdb.so  librocksdb.so.6 librocksdb.so.6.10 /usr/lib/
+cd include
 sudo cp -r rocksdb /usr/include/
 ```
 
