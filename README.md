@@ -9,7 +9,7 @@ StreamNet implemented in Golang.
 ### From Source
 
 #### Ubuntu
-You'll need `go` [installed](https://golang.org/doc/install) first.
+You'll need  [[go]](https://golang.org/doc/install)     [[gorocksdb]](https://github.com/triasteam/go-streamnet/blob/master/docs/software/gorocksdb%20%E5%AE%89%E8%A3%85.md) installed first.
 
 ##### Get Source Code
 
