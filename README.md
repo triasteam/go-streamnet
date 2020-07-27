@@ -7,9 +7,11 @@ StreamNet implemented in Golang.
 (not supported yet)
 
 ### From Source
+
+#### Ubuntu
 You'll need `go` [installed](https://golang.org/doc/install) first.
 
-#### Get Source Code
+##### Get Source Code
 
 ```bash
 mkdir -p $GOPATH/src/github.com/triasteam
@@ -18,7 +20,7 @@ git clone https://github.com/triasteam/go-streamnet.git
 cd go-streamnet
 ```
 
-#### Compile
+##### Compile
 
 ```bash
 make install
@@ -32,6 +34,37 @@ make build
 
 to put the binary in `./build`.
 
+#### MacOS
+
+##### dependencies
+- RocksDb
+  ```
+  $ brew install rocksdb
+  ```
+- Golang version >= v1.14.2, [installed](https://golang.org/doc/install) 
+
+##### Get Source Code
+
+```bash
+mkdir -p $GOPATH/src/github.com/triasteam
+cd $GOPATH/src/github.com/triasteam
+git clone https://github.com/triasteam/go-streamnet.git
+cd go-streamnet
+```
+
+##### Compile
+
+```bash
+make install
+```
+
+to put the binary in `$GOPATH/bin` or use:
+
+```bash
+make build
+```
+
+to put the binary in `./build`.
 
 __The binary's name is '**gsn**', which is standing for Go-StreamNet.__
 
