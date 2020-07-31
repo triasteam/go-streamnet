@@ -8,7 +8,7 @@ import (
 
 	"fmt"
 	"os"
-
+	streamnet_conf "github.com/triasteam/go-streamnet/config"
 	//"io"
 	//cmd "github.com/triasteam/go-streamnet/commands"
 	"github.com/triasteam/go-streamnet/server"
@@ -24,11 +24,10 @@ type StreamNet struct {
 // GlobalData is running through the daemon.
 var GlobalData StreamNet
 
-// the daemon main function.
 func main() {
 	// open DB
 	store := store.Storage{}
-	err := store.Init("./db")
+	err := store.Init(streamnet_conf.EnvConfig.DBPath)
 	if err != nil {
 		fmt.Printf("Open database failed!")
 		os.Exit(-1)
