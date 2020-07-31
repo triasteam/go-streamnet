@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/triasteam/go-streamnet/store"
-
+	streamnet_conf "github.com/triasteam/go-streamnet/config"
 	"github.com/triasteam/go-streamnet/types"
 )
 
@@ -37,7 +37,7 @@ func Start(store *store.Storage) {
 	mux.HandleFunc("/get", GetHandle)
 
 	server = &http.Server{
-		Addr:    ":14700",
+		Addr:    streamnet_conf.EnvConfig.Port,
 		Handler: mux,
 		//WriteTimeout: time.Second * 3,
 	}

@@ -7,7 +7,9 @@ import (
 
 	"fmt"
 	"os"
-
+	"flag"
+	"io/ioutil"
+	streamnet_conf "github.com/triasteam/go-streamnet/config"
 	//"io"
 	//cmd "github.com/triasteam/go-streamnet/commands"
 	"github.com/triasteam/go-streamnet/server"
@@ -21,10 +23,24 @@ type StreamNet struct {
 
 var GlobalData StreamNet
 
+func init(){
+	var filePath = "config.yml";
+	data, err := ioutil.ReadFile(filePath);
+	if(err != nil) {
+		yaml.Unmarshal(data, &streamnet_conf.EnvConfig)
+	} else {
+		&streamnet_conf.EnvConfig{
+			Port: flag.String("port",":14700","start port")
+			DBPath: flag.String("dbpath","./db")
+		}
+	}
+}
+
 func main() {
 	// open DB
+	flag.Parse()
 	store := store.Storage{}
-	err := store.Init("./db")
+	err := store.Init(streamnet_conf.EnvConfig.DBPath)
 	if err != nil {
 		fmt.Printf("Open database failed!")
 		os.Exit(-1)
