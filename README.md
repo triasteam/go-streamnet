@@ -1,6 +1,22 @@
 # go-streamnet
 StreamNet implemented in Golang.
 
+## Modules
+
+* config: parsing the configuration file.
+* dag: the dag structure and methods.
+* streamwork:  the algorithm to 'drag' DAG to chain.
+* tipselection: selecting two tips from dag.
+* server: the http server.
+* store: the storage module.
+* forward: the genesis forward module.
+* network: the network module, for broadcasting and synchronization.
+* docs: documents.
+* examples: all the tests and examples.
+* types: all the common types.
+* utils: all common libs.
+* commands: parsing all subcommands.
+
 
 ## Install
 ### From Binary
@@ -8,8 +24,12 @@ StreamNet implemented in Golang.
 
 ### From Source
 
+#### prerequisite 
+
+* Golang version >= v1.14.2, [installed](https://golang.org/doc/install) 
+
 #### Ubuntu
-You'll need  [[go]](https://golang.org/doc/install)     [[gorocksdb]](https://github.com/triasteam/go-streamnet/blob/master/docs/software/gorocksdb%20%E5%AE%89%E8%A3%85.md) installed first.
+You'll need  [[gorocksdb]](https://github.com/triasteam/go-streamnet/blob/master/docs/software/gorocksdb%20%E5%AE%89%E8%A3%85.md) installed first.
 
 ##### Get Source Code
 
@@ -41,7 +61,6 @@ to put the binary in `./build`.
   ```
   $ brew install rocksdb
   ```
-- Golang version >= v1.14.2, [installed](https://golang.org/doc/install) 
 
 ##### Get Source Code
 
