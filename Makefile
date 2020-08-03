@@ -15,6 +15,9 @@ test:
 	@echo "--> Running test..."
 
 
+doc:
+	go doc 
+
 clean:
 	rm -rf build/
 
