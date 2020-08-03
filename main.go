@@ -1,3 +1,4 @@
+// Package main
 package main
 
 import (
@@ -15,12 +16,15 @@ import (
 	//"github.com/triasteam/go-streamnet/store"
 )
 
+// StreamNet is the biggest structure.
 type StreamNet struct {
 	Store *store.Storage
 }
 
+// GlobalData is running through the daemon.
 var GlobalData StreamNet
 
+// the daemon main function.
 func main() {
 	// open DB
 	store := store.Storage{}

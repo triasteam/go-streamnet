@@ -1,3 +1,4 @@
+// Package server contain all thing of http server
 package server
 
 import (
@@ -18,6 +19,7 @@ var (
 	db     *store.Storage
 )
 
+// Start a http server
 func Start(store *store.Storage) {
 	//TODO: find a better way to check whether server has started.
 	if server != nil {
@@ -45,6 +47,7 @@ func Start(store *store.Storage) {
 	log.Fatal(server.ListenAndServe())
 }
 
+// Stop the server
 func Stop() {
 	log.Printf("Go-StreamNet server is closing...\n")
 	err := server.Shutdown(nil)
@@ -59,6 +62,7 @@ func (*gsnHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("hello, go-streamnet.\n"))
 }
 
+// SaveHandle process the 'save' request.
 func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
@@ -92,6 +96,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	w.Write(reply)
 }
 
+// GetHandle process the 'get' request.
 func GetHandle(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
