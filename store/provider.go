@@ -1,5 +1,6 @@
 package store
 
+// StorageProvider abstract all storage .
 type StorageProvider interface {
 	Init(path string) error
 	Save(key []byte, value []byte) error
