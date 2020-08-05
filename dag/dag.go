@@ -1,32 +1,45 @@
 package dag
 
-const HASH_LEN = 128
-type Hash [HASH_LEN]byte
+import (
+	"github.com/triasteam/go-streamnet/store"
+	"github.com/triasteam/go-streamnet/types"
+)
 
+// Dag is the most important struct in the whole procedure.
 type Dag struct {
-	graph map[Hash][]Hash
-	parentGraph map[Hash]Hash
+	graph       map[types.Hash][]types.Hash
+	parentGraph map[types.Hash]types.Hash
 
-	revGraph map[Hash][]Hash
-	parentRevGraph map[Hash][]Hash
+	revGraph       map[types.Hash][]types.Hash
+	parentRevGraph map[types.Hash][]types.Hash
 
-	score map[Hash]float64
-	parentScore map[Hash]float64
+	score       map[types.Hash]float64
+	parentScore map[types.Hash]float64
 
-	degrees map[Hash]int64;
-	topOrder map[int64][]Hash
-	topOrderStreaming map[int64][]Hash
+	degrees           map[types.Hash]int64
+	topOrder          map[int64][]types.Hash
+	topOrderStreaming map[int64][]types.Hash
 
-	subGraph map[Hash][]Hash
-	subRevGraph map[Hash][]Hash
-	subParentGraph map[Hash]Hash
-	subParentRevGraph map[Hash][]Hash
+	subGraph          map[types.Hash][]types.Hash
+	subRevGraph       map[types.Hash][]types.Hash
+	subParentGraph    map[types.Hash]types.Hash
+	subParentRevGraph map[types.Hash][]types.Hash
 
-	levelmap map[Hash]int64
-	namemap map[Hash]string
+	levelmap map[types.Hash]int64
+	namemap  map[types.Hash]string
 
 	totalDepth int
-	store Store
+	store      store.Storage
 	// to use
-	pivotChain []Hash
+	pivotChain []types.Hash
+}
+
+// Init return a new Dag struct.
+func Init() *Dag {
+
+}
+
+// Close will free all the resources.
+func (dag *Dag) Close() {
+
 }
