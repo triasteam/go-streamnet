@@ -55,7 +55,7 @@ func Init(db *store.Storage) *Dag {
 		namemap:           make(map[types.Hash]string),
 		totalDepth:        0,
 		store:             db,
-		pivotChain:        type.NewSet(),
+		pivotChain:        types.NewSet(),
 	}
 }
 
