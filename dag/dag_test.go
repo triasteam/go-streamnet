@@ -7,6 +7,9 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	s := store.Init("/tmp/gorocksdb_test")
-	d := Init(s)
+	s := store.Storage{}
+	s.Init("/tmp/gorocksdb_test")
+	d := Init(&s)
+
+	t.Log(d)
 }
