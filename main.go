@@ -27,6 +27,7 @@ var GlobalData StreamNet
 func main() {
 	// open DB
 	store := store.Storage{}
+	fmt.Pringln("Port: " + streamnet_conf.EnvConfig.Port + ", DBpath: "+ streamnet_conf.EnvConfig.DBPath)
 	err := store.Init(streamnet_conf.EnvConfig.DBPath)
 	if err != nil {
 		fmt.Printf("Open database failed!")
