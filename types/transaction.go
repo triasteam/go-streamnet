@@ -77,3 +77,19 @@ func (tx *Transaction) GetApprovers() Set {
 	nonce                         []byte
 >>>>>>> 688dc7a... implement type 'Set'
 }
+
+// GetTrunkTransactionHash returns the trunk hash.
+func (tx *Transaction) GetTrunkTransactionHash() Hash {
+	if tx == nil {
+		return NewHash(nil)
+	}
+	return tx.trunk
+}
+
+// GetBranchTransactionHash returns the branch hash.
+func (tx *Transaction) GetBranchTransactionHash() Hash {
+	if tx == nil {
+		return NewHash(nil)
+	}
+	return tx.branch
+}
