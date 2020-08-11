@@ -13,3 +13,7 @@ func TestInit(t *testing.T) {
 
 	t.Log(d)
 }
+
+func TestAdd(t *testing.T) {
+
+}
