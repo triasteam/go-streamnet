@@ -16,24 +16,25 @@ type Dag struct {
 	revGraph       map[types.Hash]types.Set
 	parentRevGraph map[types.Hash]types.Set
 
-	degrees           map[types.Hash]int64
+	degrees map[types.Hash]int64
 
 	score       map[types.Hash]float64
 	parentScore map[types.Hash]float64
-	
+	freshScore  bool
+
 	topOrder          map[int64]types.Set
 	topOrderStreaming map[int64]types.Set
-	totalDepth int
+	totalDepth        int
 
 	subGraph          map[types.Hash]types.Set
 	subRevGraph       map[types.Hash]types.Set
 	subParentGraph    map[types.Hash]types.Hash
 	subParentRevGraph map[types.Hash]types.Set
 
-	levelmap map[types.Hash]int64
-	namemap  map[types.Hash]string
+	levels  map[types.Hash]int64
+	namemap map[types.Hash]string
 
-	store      *store.Storage
+	store *store.Storage
 
 	pivotChain types.Set
 
@@ -49,6 +50,7 @@ func Init(db *store.Storage) *Dag {
 		parentRevGraph:    make(map[types.Hash]types.Set),
 		score:             make(map[types.Hash]float64),
 		parentScore:       make(map[types.Hash]float64),
+		freshScore:        false,
 		degrees:           make(map[types.Hash]int64),
 		topOrder:          make(map[int64]types.Set),
 		topOrderStreaming: make(map[int64]types.Set),
@@ -56,7 +58,7 @@ func Init(db *store.Storage) *Dag {
 		subRevGraph:       make(map[types.Hash]types.Set),
 		subParentGraph:    make(map[types.Hash]types.Hash),
 		subParentRevGraph: make(map[types.Hash]types.Set),
-		levelmap:          make(map[types.Hash]int64),
+		levels:            make(map[types.Hash]int64),
 		namemap:           make(map[types.Hash]string),
 		totalDepth:        0,
 		store:             db,
@@ -81,7 +83,7 @@ func (d *Dag) Add(key types.Hash, value *types.Transaction) bool {
 
 	d.updateTopologicalOrder(key, trunk, branch)
 
-	d.updateScore(key, currentIndex, lastIndex)
+	d.updateScore(key)
 
 	return true
 }
@@ -129,37 +131,40 @@ func (d *Dag) updateTopologicalOrder(key, trunk, branch types.Hash) {
 	if len(d.topOrderStreaming) == 0 {
 		d.topOrderStreaming[1] = types.NewSet()
 		d.topOrderStreaming[1].Add(key)
-		d.levelmap[key] = 1
+		d.levels[key] = 1
 		d.topOrderStreaming[0] = types.NewSet()
 		d.topOrderStreaming[0].Add(trunk)
 		d.topOrderStreaming[0].Add(branch)
 		d.totalDepth = 1
 		return
 	} else {
-		trunkLevel := d.levelmap[trunk]
-		branchLevel := d.levelmap[branch]
+		// TODO: check trunk or branch exist !!!!!!!!!
+		// Or we won't call Add if trunk or branch not exist!!!!
+		trunkLevel := d.levels[trunk]
+		branchLevel := d.levels[branch]
 		lvl := utils.Min(trunkLevel, branchLevel) + 1
 		if _, ok := d.topOrderStreaming[lvl]; !ok {
 			d.topOrderStreaming[lvl] = types.NewSet()
 			d.totalDepth++
 		}
 		d.topOrderStreaming[lvl].Add(key)
-		d.levelmap[key] = lvl
-
+		d.levels[key] = lvl
 	}
 }
 
-func (d *Dag) updateScore(key type.Hash) {
-	if (BaseIotaConfig.getInstance().getConfluxScoreAlgo().equals("CUM_WEIGHT")) {
-		CumWeightScore.update(d.graph, d.score, key);
-		CumWeightScore.updateParentScore(d.parentGraph, d.parentScore, key);
-	
-	} else if (BaseIotaConfig.getInstance().getConfluxScoreAlgo().equals("KATZ")) {
-		score.put(key, 1.0 / (score.size() + 1));
-		KatzCentrality centrality = new KatzCentrality(graph, revGraph, 0.5);
-		centrality.setScore(score);
-		score = centrality.compute();
-		parentScore = CumWeightScore.updateParentScore(d.parentGraph, d.parentScore, key, 1.0);
+func (d *Dag) updateScore(key types.Hash) {
+	scoreAlg := "KATZ"
+
+	if scoreAlg == "CUM_WEIGHT" {
+		Update(d.graph, d.score, key, 1)
+		UpdateParentScore(d.parentGraph, d.parentScore, key, 1)
+
+	} else if scoreAlg == "KATZ" {
+		d.score[key] = 1.0 / (float64(len(d.score)) + 1.0)
+		centrality := NewKatz(d.graph, d.revGraph, 0.5)
+		centrality.SetScore(d.score)
+		d.score = centrality.Compute()
+		d.parentScore = UpdateParentScore(d.parentGraph, d.parentScore, key, 1.0)
 	}
-	freshScore = false;
+	d.freshScore = false
 }
