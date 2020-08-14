@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/triasteam/go-streamnet/store"
 	streamnet_conf "github.com/triasteam/go-streamnet/config"
+	"github.com/triasteam/go-streamnet/store"
 	"github.com/triasteam/go-streamnet/types"
 )
 
@@ -75,13 +75,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
 
-	// save data to db
-	k, err := db.SaveValue([]byte(params.String()))
-	if err != nil {
-		log.Printf("Save data to database failed: %v\n", err)
-		fmt.Fprintf(w, `{"code":-1, "hash": }`)
-		return
-	}
+	// save data to dag & db
 
 	// hex encode
 	key_hex := make([]byte, hex.EncodedLen(len(k)))

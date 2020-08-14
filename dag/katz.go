@@ -21,12 +21,13 @@ type KatzCentrality struct {
 	score       map[types.Hash]float64
 }
 
-func NewKatz(network, revNetwork map[types.Hash]types.Set, alpha float64) *KatzCentrality {
+func NewKatz(network, revNetwork map[types.Hash]types.Set, score map[types.Hash]float64, alpha float64) *KatzCentrality {
 	kz := KatzCentrality{}
 
 	kz.network = network
 	kz.alpha = alpha
 	kz.beta = DEFAULT_BETA
+	kz.score = score
 
 	kz.allVertices = types.NewSet()
 
@@ -53,10 +54,6 @@ func NewKatz(network, revNetwork map[types.Hash]types.Set, alpha float64) *KatzC
 	}
 
 	return &kz
-}
-
-func (kz *KatzCentrality) SetScore(score map[types.Hash]float64) {
-	kz.score = score
 }
 
 func (kz *KatzCentrality) Compute() map[types.Hash]float64 {
