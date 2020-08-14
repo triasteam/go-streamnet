@@ -36,9 +36,11 @@ type Dag struct {
 
 	store *store.Storage
 
-	pivotChain types.Set
+	pivotChain types.List
 
 	graphLock sync.RWMutex
+
+	ancestors *types.Stack
 }
 
 // Init return a new Dag struct.
@@ -62,7 +64,8 @@ func Init(db *store.Storage) *Dag {
 		namemap:           make(map[types.Hash]string),
 		totalDepth:        0,
 		store:             db,
-		pivotChain:        types.NewSet(),
+		pivotChain:        types.List{},
+		ancestors:         types.NewStack(),
 	}
 }
 
@@ -153,18 +156,128 @@ func (d *Dag) updateTopologicalOrder(key, trunk, branch types.Hash) {
 }
 
 func (d *Dag) updateScore(key types.Hash) {
-	scoreAlg := "KATZ"
+	scoreAlg := "CUM_WEIGHT"
 
 	if scoreAlg == "CUM_WEIGHT" {
-		Update(d.graph, d.score, key, 1)
-		UpdateParentScore(d.parentGraph, d.parentScore, key, 1)
+		CumulateWeight{}.Update(d.graph, d.score, key, 1)
+		CumulateWeight{}.UpdateParentScore(d.parentGraph, d.parentScore, key, 1)
 
 	} else if scoreAlg == "KATZ" {
 		d.score[key] = 1.0 / (float64(len(d.score)) + 1.0)
-		centrality := NewKatz(d.graph, d.revGraph, 0.5)
-		centrality.SetScore(d.score)
+		centrality := NewKatz(d.graph, d.revGraph, d.score, 0.5)
 		d.score = centrality.Compute()
-		d.parentScore = UpdateParentScore(d.parentGraph, d.parentScore, key, 1.0)
+		CumulateWeight{}.UpdateParentScore(d.parentGraph, d.parentScore, key, 1)
 	}
 	d.freshScore = false
+}
+
+func computeToplogicalOrder() {
+
+}
+
+func (d *Dag) GetPivotalHash(depth int) types.Hash {
+	var ret types.Hash
+	d.buildPivotChain()
+	if depth == -1 || depth >= d.pivotChain.Length() {
+		set := d.topOrderStreaming[1]
+		if set.IsEmpty() {
+			return types.NewHash(nil)
+		}
+		ret = set.List()[0]
+		return ret
+	}
+
+	ret = d.pivotChain.Index(d.pivotChain.Length() - depth - 1)
+	return ret
+}
+
+func (d *Dag) buildPivotChain() {
+	d.pivotChain = d.PivotChain(d.GetGenesis())
+}
+
+func (d *Dag) PivotChain(start types.Hash) types.List {
+	d.graphLock.RLock()
+	defer d.graphLock.Unlock()
+
+	list := types.List{}
+
+	if _, ok := d.graph[start]; start == types.NewHash(nil) || !ok {
+		return list
+	}
+
+	list.Append(start)
+
+	v, ok := d.parentRevGraph[start]
+	for ok && !v.IsEmpty() {
+		s := d.getMax(v)
+		if s == types.NewHash(nil) {
+			return list
+		}
+
+		d.pivotChain.Add(s)
+
+		start = s
+		v, ok = d.parentRevGraph[start]
+	}
+
+	return list
+}
+
+func (d *Dag) GetGenesis() types.Hash {
+	if d.ancestors != nil && !d.ancestors.Empty() {
+		return d.ancestors.Peek()
+	}
+
+	for key, v := range d.parentGraph {
+		if _, ok := d.parentGraph[v]; !ok {
+			return key
+		}
+	}
+	return types.NewHash(nil)
+}
+
+func (d *Dag) getMax(set types.Set) types.Hash {
+	tmpMaxScore := -1.0
+	s := types.NewHash(nil)
+
+	for _, block := range set.List() {
+		if v, ok := d.parentScore[block]; ok {
+			if v > tmpMaxScore {
+				tmpMaxScore = v
+				s = block
+			} else if v == tmpMaxScore {
+				sStr := s.String()
+				blockStr := block.String()
+				if sStr < blockStr {
+					s = block
+				}
+			}
+		}
+	}
+	return s
+}
+
+func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
+	d.graphLock.RLock()
+
+	if _, ok := d.graph[start]; start == types.NewHash(nil) || !ok {
+		return types.NewHash(nil)
+	}
+	v, ok := d.parentRevGraph[start]
+	for ok && !v.IsEmpty() {
+		s := d.getMax(v)
+		if s == types.NewHash(nil) {
+			return start
+		}
+		start = s
+		v, ok = d.parentRevGraph[start]
+	}
+	return start
+
+}
+
+func (d *Dag) BuildGraph() {
+}
+
+func (d *Dag) ComputeScore() {
 }
