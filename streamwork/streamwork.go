@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/phf/go-queue/queue"
+	"github.com/triasteam/go-streamnet/types"
 )
 
 // StreamWork is the interface of dag
@@ -16,20 +17,20 @@ type StreamWork interface {
 // blocks (or transaction) is stored as a graph,
 // a graph would be convert to a chain to output
 type Dag struct {
-	graph          map[string][]string
-	revGraph       map[string][]string
-	parentGraph    map[string]string
-	revParentGraph map[string][]string
+	graph          map[types.Hash][]types.Hash
+	revGraph       map[types.Hash][]types.Hash
+	parentGraph    map[types.Hash]types.Hash
+	revParentGraph map[types.Hash][]types.Hash
 
-	parentScore map[string]float64
+	parentScore map[types.Hash]float64
 
-	lvlMap map[string]int64
+	lvlMap map[types.Hash]int64
 
-	genesis string
+	genesis types.Hash
 }
 
 // IfCovered test if a node is son of ancestor
-func (d *Dag) IfCovered(block string, ancestor string, covered []string) bool {
+func (d *Dag) IfCovered(block types.Hash, ancestor types.Hash, covered []types.Hash) bool {
 
 	if d.revGraph[block] == nil {
 		return false
@@ -39,7 +40,7 @@ func (d *Dag) IfCovered(block string, ancestor string, covered []string) bool {
 		return true
 	}
 
-	visited := []string{}
+	visited := []types.Hash{}
 	fmt.Println("visited", visited)
 
 	queue := &queue.Queue{}
@@ -49,7 +50,7 @@ func (d *Dag) IfCovered(block string, ancestor string, covered []string) bool {
 	visited = append(visited, block)
 
 	for queue.Len() > 0 {
-		if h, ok := queue.PopFront().(string); ok {
+		if h, ok := queue.PopFront().(types.Hash); ok {
 			for _, e := range d.revGraph[h] {
 				if e == ancestor {
 					return true
@@ -68,19 +69,19 @@ func (d *Dag) IfCovered(block string, ancestor string, covered []string) bool {
 }
 
 // DiffSet is ...
-func (d *Dag) DiffSet(block string, parent string, covered []string) []string {
+func (d *Dag) DiffSet(block types.Hash, parent types.Hash, covered []types.Hash) []types.Hash {
 	if d.graph[block] == nil {
-		return []string{}
+		return []types.Hash{}
 	}
 
-	ret := []string{}
+	ret := []types.Hash{}
 	queue := &queue.Queue{}
 	queue.Init()
 
 	queue.PushBack(block)
 
 	for queue.Len() > 0 {
-		if h, ok := queue.PopFront().(string); ok {
+		if h, ok := queue.PopFront().(types.Hash); ok {
 			for _, e := range d.graph[h] {
 				if d.graph[e] != nil && !contains(ret, e) && !d.IfCovered(e, parent, covered) {
 					queue.PushBack(e)
@@ -93,9 +94,9 @@ func (d *Dag) DiffSet(block string, parent string, covered []string) []string {
 }
 
 // GetMax returns ...
-func (d *Dag) GetMax(start string) string {
+func (d *Dag) GetMax(start types.Hash) types.Hash {
 	tmpMaxScore := float64(-1)
-	s := ""
+	s := types.Hash{}
 	for _, block := range d.revParentGraph[start] {
 		if d.parentScore[block] != 0 {
 			if d.parentScore[block] > tmpMaxScore {
@@ -113,14 +114,14 @@ func (d *Dag) GetMax(start string) string {
 	return s
 }
 
-func (d *Dag) getPivot(start string) string {
-	if start == "" || d.graph[start] == nil {
-		return ""
+func (d *Dag) getPivot(start types.Hash) types.Hash {
+	if &start == nil || d.graph[start] == nil {
+		return types.Hash{}
 	}
 
 	for d.revParentGraph[start] != nil {
 		s := d.GetMax(start)
-		if s == "" {
+		if &s == nil {
 			return start
 		}
 		start = s
@@ -129,11 +130,11 @@ func (d *Dag) getPivot(start string) string {
 }
 
 // buildSubGraph returns ...
-func (d *Dag) buildSubGraph(blocks []string) map[string][]string {
-	subMap := make(map[string][]string)
+func (d *Dag) buildSubGraph(blocks []types.Hash) map[types.Hash][]types.Hash {
+	subMap := make(map[types.Hash][]types.Hash)
 	for _, h := range blocks {
 		s := d.graph[h]
-		ss := []string{}
+		ss := []types.Hash{}
 
 		for _, hh := range s {
 			if contains(blocks, hh) {
@@ -146,20 +147,20 @@ func (d *Dag) buildSubGraph(blocks []string) map[string][]string {
 }
 
 // StreamWork returns ...
-func (d *Dag) StreamWork(block string) []string {
-	list := []string{}
-	covered := []string{}
-	if block == "" || d.graph[block] == nil {
+func (d *Dag) StreamWork(block types.Hash) []types.Hash {
+	list := []types.Hash{}
+	covered := []types.Hash{}
+	if &block == nil || d.graph[block] == nil {
 		return list
 	}
 
 	for {
 		parent := d.parentGraph[block]
-		subTopOrder := []string{}
+		subTopOrder := []types.Hash{}
 		diff := d.DiffSet(block, parent, covered)
 		for len(diff) != 0 {
 			subGraph := d.buildSubGraph(diff)
-			noBeforeInTmpGraph := []string{}
+			noBeforeInTmpGraph := []types.Hash{}
 			for k, v := range subGraph {
 				if len(v) != 0 {
 					continue
@@ -181,7 +182,7 @@ func (d *Dag) StreamWork(block string) []string {
 		covered = append(covered, subTopOrder...)
 		block = d.parentGraph[block]
 
-		if d.parentGraph[block] == "" {
+		if len(d.parentGraph[block]) < 1 {
 			break
 		}
 	}
@@ -189,12 +190,12 @@ func (d *Dag) StreamWork(block string) []string {
 }
 
 // GetTotalOrder returns total order of the graph
-func (d *Dag) GetTotalOrder() []string {
+func (d *Dag) GetTotalOrder() []types.Hash {
 	pivot := d.getPivot(d.genesis)
 	return d.StreamWork(pivot)
 }
 
-func contains(s []string, e string) bool {
+func contains(s []types.Hash, e types.Hash) bool {
 	for _, a := range s {
 		if a == e {
 			return true
@@ -203,8 +204,8 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-// StringToFloat make a string to float
-func StringToFloat(s string) float64 {
+// StringToFloat make a types.Hash to float
+func StringToFloat(s types.Hash) float64 {
 	result := float64(0)
 	for i := range s {
 		result += float64(s[i]) * math.Pow10(i)
@@ -213,9 +214,9 @@ func StringToFloat(s string) float64 {
 	return result
 }
 
-// RemoveAll first cp a empty target string then append if not contained by another slice
-func RemoveAll(obj []string, toRemove []string) []string {
-	rtn := []string{}
+// RemoveAll first cp a empty target types.Hash then append if not contained by another slice
+func RemoveAll(obj []types.Hash, toRemove []types.Hash) []types.Hash {
+	rtn := []types.Hash{}
 	for _, s := range obj {
 		if !contains(toRemove, s) {
 			rtn = append(rtn, s)
@@ -225,7 +226,7 @@ func RemoveAll(obj []string, toRemove []string) []string {
 }
 
 // SortByLvl return sorted slice by lvl
-func SortByLvl(obj []string, lvlMap map[string]int64) []string {
+func SortByLvl(obj []types.Hash, lvlMap map[types.Hash]int64) []types.Hash {
 	length := len(obj)
 	for i := 0; i < length; i++ {
 		for j := i + 1; j < length; j++ {
