@@ -3,6 +3,7 @@ module github.com/triasteam/go-streamnet
 go 1.14
 
 require (
+	github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d
 	github.com/spf13/cobra v1.0.0
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c
 	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
