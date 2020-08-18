@@ -219,7 +219,7 @@ func (d *Dag) PivotChain(start types.Hash) types.List {
 			return list
 		}
 
-		d.pivotChain.Add(s)
+		d.pivotChain.Append(s)
 
 		start = s
 		v, ok = d.parentRevGraph[start]
@@ -285,6 +285,31 @@ func (d *Dag) BuildGraph() {
 }
 
 func (d *Dag) ComputeScore() {
+}
+
+func (d *Dag) GetChild(block types.Hash) types.Set {
+	if v, ok := d.revGraph[block]; ok {
+		return v
+	}
+
+	return types.NewSet()
+}
+
+func (d *Dag) Contains(key types.Hash) bool {
+	_, ok := d.graph[key]
+	return ok
+}
+
+func (d *Dag) GetScore(key types.Hash) float64 {
+	d.graphLock.RLock()
+	defer d.graphLock.Unlock()
+
+	score, ok := d.score[key]
+	if ok {
+		return score
+	} else {
+		return 0.0
+	}
 }
 
 // IfCovered test if a node is son of ancestor
