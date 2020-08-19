@@ -383,4 +383,6 @@ service ABCIApplication {
   rpc EndBlock(RequestEndBlock) returns (ResponseEndBlock);
   rpc Submit(RequestSubmit) returns (ResponseSubmit);
   rpc RangeQuery(RequestRangeQuery) returns (ResponseRangeQuery);
+  rpc StoreBlock(RequestStoreBlock) returns (ResponseStoreBlock);
+  rpc GetNoderank(RequestGetNoderank) returns (ResponseGetNoderank);
 }

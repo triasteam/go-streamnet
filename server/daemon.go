@@ -9,9 +9,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/triasteam/go-streamnet/store"
+	"net"
+
+	pb "github.com/triasteam/go-streamnet/abci/proto"
 	streamnet_conf "github.com/triasteam/go-streamnet/config"
+	"github.com/triasteam/go-streamnet/store"
 	"github.com/triasteam/go-streamnet/types"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -45,6 +49,17 @@ func Start(store *store.Storage) {
 	}
 
 	log.Fatal(server.ListenAndServe())
+
+	lis, err := net.Listen("tcp", streamnet_conf.EnvConfig.GRPC.Port)
+	if err != nil {
+		log.Fatalf("failed to listen : %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterStreamnetServiceServer(s, NewAbciServer())
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+
 }
 
 // Stop the server

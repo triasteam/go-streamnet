@@ -1,28 +1,21 @@
 package noderank
 
 import (
-	"fmt"
 	"encoding/json"
-	url2 "net/url"
+	"fmt"
+	"log"
 	"math"
+	url2 "net/url"
 	"sort"
 	"strconv"
 	"strings"
-	"log"
+
 	"github.com/awalterschulze/gographviz"
 )
 
-type NodeRank interface{
-	AddAttestationInfo()();
-	GetRank()();
-	CaculateRank()();
-	FloatRound()();
-	PrintHCGraph()();
-}
-
 type message struct {
 	TeeNum     int64    `json:"tee_num"`
-	TeeContent []teectx `json:"tee_content"`
+	TeeContent []Teectx `json:"tee_content"`
 }
 
 type GetRankRequest struct {
@@ -30,7 +23,7 @@ type GetRankRequest struct {
 	Duration int    `json:"duration"`
 }
 
-type teectx struct {
+type Teectx struct {
 	Attester string  `json:"attester"`
 	Attestee string  `json:"attestee"`
 	Score    float64 `json:"score"`
@@ -38,27 +31,27 @@ type teectx struct {
 	Nonce    int64   `json:"nonce,omitempty"`
 }
 
-type teescore struct {
+type Teescore struct {
 	Attestee string  `json:"attestee"`
 	Score    float64 `json:"score"`
 }
 
 // TeeSoreSlice ...
-type TeeSoreSlice []teescore
+type TeeSoreSlice []Teescore
 
-func GetRank(request *GetRankRequest, period int64, numRank int64)([]teescore, []teectx, error) {
-	var msgArr []string;
-	err := json.Unmarshal([]byte(request.Blocks), &msgArr);
+func GetRank(request *GetRankRequest, period int, numRank int) ([]Teescore, []Teectx, error) {
+	var msgArr []string
+	err := json.Unmarshal([]byte(request.Blocks), &msgArr)
 	if err != nil {
-		fmt.Println("unmarshal string array error, result.Blocks = ", request.Blocks);
+		fmt.Println("unmarshal string array error, result.Blocks = ", request.Blocks)
 		return nil, nil, err
 	}
 
 	graph := NewGraph()
 
-	cm := make(map[string]teectx)
+	cm := make(map[string]Teectx)
 
-	rArr0 := []teectx{}
+	rArr0 := []Teectx{}
 
 	for _, m2 := range msgArr {
 		msgT, err := url2.QueryUnescape(m2)
@@ -83,16 +76,16 @@ func GetRank(request *GetRankRequest, period int64, numRank int64)([]teescore, [
 					fmt.Println("un invalid rank param. score is zero.")
 				}
 				graph.Link(r.Attester, r.Attestee, r.Score)
-				cm[r.Attestee] = teectx{r.Attester, r.Attestee, r.Score, "", 0}
+				cm[r.Attestee] = Teectx{r.Attester, r.Attestee, r.Score, "", 0}
 				rArr0 = append(rArr0, r)
 			}
 		}
 	}
-	var rst []teescore
-	var teectxslice []teectx
+	var rst []Teescore
+	var teectxslice []Teectx
 
 	graph.Rank(0.85, 0.0001, func(attestee string, score float64) {
-		tee := teescore{attestee, floatRound(score, 8)}
+		tee := Teescore{attestee, floatRound(score, 8)}
 		rst = append(rst, tee)
 	})
 	sort.Sort(TeeSoreSlice(rst)) // 把计算结果按得分高低排序
@@ -100,7 +93,7 @@ func GetRank(request *GetRankRequest, period int64, numRank int64)([]teescore, [
 		return nil, nil, nil
 	}
 
-	endIdx := int64(len(rst))
+	endIdx := int(len(rst))
 	if endIdx > numRank {
 		endIdx = numRank
 	}
@@ -121,39 +114,6 @@ func GetRank(request *GetRankRequest, period int64, numRank int64)([]teescore, [
 
 	return rst, teectxslice, nil
 }
-
-func AddAttestationInfo(addr1 string, url string, info []string) error {
-	raw := new(teectx)
-	raw.Attester = info[0]
-	raw.Attestee = info[1]
-	raw.Nonce, _ = strconv.ParseInt(info[3], 10, 64)
-	raw.Time = info[4]
-	score, err := strconv.ParseFloat(info[2], 64)
-	if err != nil {
-		return err
-	}
-	raw.Score = score
-	// m := new(message)
-	// m.TeeNum = 1
-	// m.TeeContent = []teectx{*raw}
-	// ms, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-
-	//TODO 存数据
-
-	// d := time.Now()
-	// ds := d.Format("20060102")
-	// data := "{\"command\":\"storeMessage\",\"address\":" + addr1 + ",\"message\":" + url2.QueryEscape(string(ms[:])) + ",\"tag\":\"" + ds + "TEE\"}"
-	// _, err = doPost(url, []byte(data))
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
-}
-
 
 // PrintHCGraph 辅助方法，用来打印结果
 func PrintHCGraph(request *GetRankRequest, period string) error {
@@ -196,7 +156,6 @@ func PrintHCGraph(request *GetRankRequest, period string) error {
 	fmt.Println(output)
 	return nil
 }
-
 
 func floatRound(f float64, n int) float64 {
 	format := "%." + strconv.Itoa(n) + "f"

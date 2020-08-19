@@ -1,0 +1,46 @@
+syntax = "proto3";
+package proto;
+
+
+message RequestStoreBlock {
+    string key = 1;
+    string block_info = 2;
+}
+  
+message RequestGetNoderank {
+    repeated string block_hash = 1;
+    uint32 duration = 2;
+    uint32 period = 3;
+    uint32 numRank = 4;
+}
+
+message ResponseStoreBlock {
+    uint32 code = 1;
+    string log = 2;
+    string data = 3;
+}
+  
+message ResponseGetNoderank {
+    uint32 code = 1;
+    string log = 2;
+    repeated NodeRankTeescore teescore = 3;
+    repeated NodeRankTeectx teectx = 4;
+}
+
+message NodeRankTeescore {
+    string attestee = 1;
+    float  score = 2;
+}
+
+message NodeRankTeectx {
+    string attester = 1;
+    string attestee = 2;
+    float  score = 3;
+    string time = 4;
+    int64  nonce = 5;
+}
+
+service StreamnetService{
+    rpc StoreBlock(RequestStoreBlock) returns (ResponseStoreBlock);
+    rpc GetNoderank(RequestGetNoderank) returns (ResponseGetNoderank);
+}
