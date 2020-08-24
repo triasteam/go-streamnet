@@ -2,7 +2,10 @@ package tipselection
 
 import "github.com/triasteam/go-streamnet/types"
 
-func IsValid(hash types.Hash) bool {
+type WalkerValidatorImpl struct {
+}
+
+func (w *WalkerValidatorImpl) IsValid(hash types.Hash) bool {
 
 	/*if (belowMaxDepth(hash(),
 			milestoneTracker.latestSolidSubtangleMilestoneIndex - config.getMaxDepth())) {

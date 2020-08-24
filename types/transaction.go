@@ -1,7 +1,5 @@
 package types
 
-import "github.com/triasteam/go-streamnet/dag"
-
 // Transaction is a core struct.
 type Transaction struct {
 <<<<<<< HEAD
@@ -80,7 +78,7 @@ func (tx *Transaction) GetApprovers() Set {
 >>>>>>> 688dc7a... implement type 'Set'
 }
 
-func FromHash(dag *dag.Dag, hash Hash) *Transaction {
+func FromHash(hash Hash) *Transaction {
 	var tx Transaction
 
 	return &tx

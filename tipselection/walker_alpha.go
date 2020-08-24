@@ -12,6 +12,10 @@ type WalkerAlpha struct {
 	dag *dag.Dag
 }
 
+func (walker *WalkerAlpha) Init(d *dag.Dag) {
+	walker.dag = d
+}
+
 func (walker *WalkerAlpha) walk( entryPoint types.Hash, ratings map[types.Hash]int, walkValidator WalkValidator) types.Hash {
 	if !walkValidator.IsValid(entryPoint) {
 		return types.NewHash(nil)

@@ -5,5 +5,5 @@ import (
 )
 
 type TipSelector interface {
-	getTransactionsToApprove(depth int, reference types.Hash) types.List
+	GetTransactionsToApprove(depth int, reference types.Hash) types.List
 }

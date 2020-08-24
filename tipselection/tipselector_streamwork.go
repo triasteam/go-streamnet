@@ -7,8 +7,11 @@ import (
 
 type TipSelectorStreamWork struct {
 	dag *dag.Dag
-	ep EntryPoint
+	ep  EntryPoint
 	cal RatingCalculator
+}
+
+func Init() {
 
 }
 
@@ -24,13 +27,15 @@ func (ts *TipSelectorStreamWork) GetTransactionsToApprove(depth int, reference t
 
 	rating := ts.cal.Calculate(entryPoint)
 
-	WalkValidator walkValidator = new WalkValidatorImpl(tangle, ledgerValidator, milestoneTracker, config);
+	var walkValidator WalkerValidatorImpl
 
-	Hash refTip;
-	refTip := walker.walk(entryPoint, rating, walkValidator);
-	tips.add(refTip);
+	var walker WalkerAlpha
+	walker.Init(ts.dag)
+
+	refTip := walker.walk(entryPoint, rating, walkValidator)
+	tips.Append(refTip)
 
 	// TODO validate UTXO etc.
 
-	return tips;
+	return tips
 }

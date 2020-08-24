@@ -7,10 +7,9 @@ import (
 	"github.com/triasteam/go-streamnet/types"
 )
 
-func Save(message *types.StoreData) {
+func StoreMessage(message *types.StoreData) error {
 	// Tipselection
-	List<Hash> txToApprove = new ArrayList<Hash>();
-	txToApprove = getTransactionToApproveTips(15)
+	txToApprove := GetTransactionToApproveTips(15)
 
 	// Transaction
 
