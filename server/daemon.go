@@ -70,14 +70,19 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	var params types.StoreData
 	err := decoder.Decode(&params)
 	if err != nil {
-		fmt.Printf("Save error: %v.", err)
+		fmt.Printf("Decode error: %v.", err)
 		return
 	}
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
 
 	// save data to dag & db
+	err = StoreMessage(&params)
+	if err != nil {
+		fmt.Printf("Save message error: %v.", err)
+		return
+	}
 
-	// hex encode
+	/*// hex encode
 	key_hex := make([]byte, hex.EncodedLen(len(k)))
 	hex.Encode(key_hex, k)
 
@@ -87,7 +92,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 		Hash: fmt.Sprintf("0x%s", key_hex),
 	}
 	reply, _ := json.Marshal(store_reply)
-	w.Write(reply)
+	w.Write(reply)*/
 }
 
 // GetHandle process the 'get' request.
