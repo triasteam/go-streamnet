@@ -10,7 +10,7 @@ type TailFinderImpl struct {
 }
 
 func (tf *TailFinderImpl) findTail(hash types.Hash) types.Hash {
-	tx := types.FromHash(tf.dag, hash)
+	/*tx := types.FromHash(tf.dag, hash)
 
 	approvees := tx.GetApprovers()
 	foundApprovee := false
@@ -28,6 +28,6 @@ func (tf *TailFinderImpl) findTail(hash types.Hash) types.Hash {
 
 	if tx.getCurrentIndex() == 0 {
 		return Optional.of(tx.getHash())
-	}
-	return Optional.empty()
+	}*/
+	return types.NILHASH
 }

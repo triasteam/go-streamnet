@@ -5,7 +5,7 @@ import "github.com/triasteam/go-streamnet/types"
 type WalkerValidatorImpl struct {
 }
 
-func (w *WalkerValidatorImpl) IsValid(hash types.Hash) bool {
+func (w WalkerValidatorImpl) IsValid(hash types.Hash) bool {
 
 	/*if (belowMaxDepth(hash(),
 			milestoneTracker.latestSolidSubtangleMilestoneIndex - config.getMaxDepth())) {

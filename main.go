@@ -49,8 +49,11 @@ func init() {
 	// init dag
 	GlobalData.dag = dag.Init(&store)
 
-	// init tipselector
+	/*// init tipselector
 	var ts tipselection.TipSelectorStreamWork
 	ts.dag
-	GlobalData.
+	GlobalData.*/
+
+	// start http server
+	server.Start(&store)
 }

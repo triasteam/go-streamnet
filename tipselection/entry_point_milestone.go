@@ -11,5 +11,5 @@ type EntryPointMilestone struct {
 }
 
 func (ms *EntryPointMilestone) GetEntryPoint(depth int) types.Hash {
-
+	return types.NILHASH
 }
