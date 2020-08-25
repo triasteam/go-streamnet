@@ -1,24 +1,32 @@
 package tipselection
 
-func UnIterableMap<HashId, Integer> calculate(Hash entryPoint) throws Exception {
-	log.debug("Start calculating cw starting with tx hash {}", entryPoint);
+import (
+	"github.com/triasteam/go-streamnet/dag"
+	"github.com/triasteam/go-streamnet/types"
+)
 
-	UnIterableMap<HashId, Integer> ret = new TransformingMap<>(HashPrefix::createPrefix, null);
+type Calculator struct {
+	dag *dag.Dag
+}
 
-	Set<Hash> visited = new HashSet<Hash> ();
-	LinkedList<Hash> queue = new LinkedList<>();
-	queue.add(entryPoint);
-	Hash h;
-	while (!queue.isEmpty()) {
-		h = queue.pop();
-		for (Hash e : tangle.getChild(h)) {
-			if (tangle.contains(e) && !visited.contains(e)) {
-				queue.add(e);
-				visited.add(e);
+func (c *Calculator) Calculate(entryPoint types.Hash) map[types.Hash]int {
+
+	ret := make(map[types.Hash]int)
+
+	visited := types.NewSet()
+	queue := types.List{}
+	queue.Append(entryPoint)
+
+	for !queue.IsEmpty() {
+		h := queue.RemoveAtIndex(0)
+		for _, e := range c.dag.GetChild(h).List() {
+			if c.dag.Contains(e) && !visited.Has(e) {
+				queue.Append(e)
+				visited.Add(e)
 			}
 		}
-		ret.put(h, (tangle.getScore(h).intValue()));
+		ret[h] = int(c.dag.GetScore(h))
 	}
 
-	return ret;
+	return ret
 }

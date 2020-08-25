@@ -18,6 +18,6 @@ func (kz *EntryPointKatz) GetEntryPoint(depth int) types.Hash {
 		kz.dag.BuildGraph()
 		kz.dag.ComputeScore()
 
-		kz.dag.GetPivotalHash(depth)
+		return kz.dag.GetPivotalHash(depth)
 	}
 }
