@@ -3,6 +3,7 @@ module github.com/triasteam/go-streamnet
 go 1.14
 
 require (
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.2.2
