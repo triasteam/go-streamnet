@@ -8,7 +8,7 @@ import (
 type storeService struct{}
 
 func NewStoreserver() *storeService {
-	return &storeserver{}
+	return &storeService{}
 }
 
 func (storeServ *storeService) StoreDagData(key string, val string) string {
