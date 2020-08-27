@@ -10,6 +10,6 @@ func Sha256(bytes []byte) Hash {
 	sum := hasher.Sum(nil)
 
 	var hash Hash
-	copy(hash[:], sum[:4])
+	copy(hash[:], sum[:])
 	return hash
 }

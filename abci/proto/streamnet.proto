@@ -3,8 +3,7 @@ package proto;
 
 
 message RequestStoreBlock {
-    string key = 1;
-    string block_info = 2;
+    string block_info = 1;
 }
   
 message RequestGetNoderank {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/triasteam/go-streamnet/noderank"
 	"github.com/triasteam/go-streamnet/store"
-	"github.com/triasteam/go-streamnet/utils/crypto/tmhash"
+	"github.com/triasteam/go-streamnet/types"
 )
 
 type transService struct{}
@@ -14,12 +14,11 @@ func NewTransServer() *transService {
 	return &transService{}
 }
 
-func (transServ *transService) StoreDagData(key string, val string) string {
-	redisStore := store.NewRedisStore() //init redisServer
-	hashUtil := tmhash.NewTruncated()   //init hashutil
-	hashKey := hashUtil.Sum([]byte(key + val))
-	var hashKeyStr = string(hashKey[:]) //get hashkey
-	redisStore.Set(hashKeyStr, val)     //store
+func (transServ *transService) StoreDagData(val string) string {
+	redisStore := store.NewRedisStore() //init redisServerstreamstreamstrea
+	hashKey := types.Sha256([]byte(val))
+	var hashKeyStr = hashKey.String() //get hashkey
+	redisStore.Set(hashKeyStr, val)   //store
 	return hashKeyStr
 }
 

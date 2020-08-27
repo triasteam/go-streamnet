@@ -16,7 +16,7 @@ func NewAbciServer() *abciServer {
 
 func (s *abciServer) StoreBlock(ctx golang_context.Context, req *pb.RequestStoreBlock) (*pb.ResponseStoreBlock, error) {
 	service := streamnet_service.NewTransServer()
-	res := service.StoreDagData(req.Key, req.BlockInfo)
+	res := service.StoreDagData(req.BlockInfo)
 	response := &pb.ResponseStoreBlock{
 		Code: 1,
 		Log:  "success",

@@ -1,6 +1,8 @@
 package types
 
-import "bytes"
+import (
+	"encoding/hex"
+)
 
 // HashLen is the length of type 'Hash'.
 const HashLen = 32
@@ -42,6 +44,5 @@ func (h Hash) String() string {
 	var b = make([]byte, HashLen, HashLen)
 	copy(b[:], h[:])
 
-	index := bytes.IndexByte(b, 0)
-	return string(b[:index])
+	return hex.EncodeToString(b[:])
 }
