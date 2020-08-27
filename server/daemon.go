@@ -5,9 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/triasteam/go-streamnet/streamnet"
+	"net"
 
+	pb "github.com/triasteam/go-streamnet/abci/proto"
 	streamnet_conf "github.com/triasteam/go-streamnet/config"
+	"github.com/triasteam/go-streamnet/streamnet"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -15,15 +18,22 @@ var (
 	sn     *streamnet.StreamNet
 )
 
-// Start a http server
 func Start(stream *streamnet.StreamNet) {
-	//TODO: find a better way to check whether server has started.
+
+	go startWeb(stream)
+	go startGrpc()
+
+	select {}
+
+}
+
+func startWeb(stream *streamnet.StreamNet) {
 	if server != nil {
 		log.Printf("Server already started.\n")
 		return
 	}
 
-	log.Printf("Go-StreamNet server is starting...\n")
+	log.Printf("Go-StreamNet web-server is starting...\n")
 
 	// set global data
 	sn = stream
@@ -41,6 +51,19 @@ func Start(stream *streamnet.StreamNet) {
 	}
 
 	log.Fatal(server.ListenAndServe())
+}
+
+func startGrpc() {
+	log.Printf("Go-StreamNet grpc-server is starting...\n")
+	lis, err := net.Listen("tcp", streamnet_conf.EnvConfig.GRPC.Port)
+	if err != nil {
+		log.Fatalf("failed to listen : %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterStreamnetServiceServer(s, NewAbciServer())
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
 
 // Stop the server
