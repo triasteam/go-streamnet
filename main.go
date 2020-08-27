@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/triasteam/go-streamnet/dag"
+	"github.com/triasteam/go-streamnet/streamnet"
 
+	"github.com/triasteam/go-streamnet/dag"
 	"github.com/triasteam/go-streamnet/tipselection"
 
 	streamnet_conf "github.com/triasteam/go-streamnet/config"
@@ -19,23 +20,17 @@ import (
 	"github.com/triasteam/go-streamnet/store"
 )
 
-// StreamNet is the biggest structure.
-type StreamNet struct {
-	dag   *dag.Dag
-	Store *store.Storage
-	ts    tipselection.TipSelector
-}
-
 // GlobalData is running through the daemon.
-var GlobalData StreamNet
+var GlobalData streamnet.StreamNet
 
 func main() {
+	initStreamWork()
 
 	// start http server
-	server.Start(GlobalData.Store)
+	server.Start(&GlobalData)
 }
 
-func init() {
+func initStreamWork() {
 	// open DB
 	store := store.Storage{}
 	fmt.Println("Port: " + streamnet_conf.EnvConfig.Port + ", DBpath: " + streamnet_conf.EnvConfig.DBPath)
@@ -47,13 +42,15 @@ func init() {
 	GlobalData.Store = &store
 
 	// init dag
-	GlobalData.dag = dag.Init(&store)
+	dag := dag.Dag{}
+	dag.Init(&store)
+	GlobalData.Dag = &dag
 
-	/*// init tipselector
-	var ts tipselection.TipSelectorStreamWork
-	ts.dag
-	GlobalData.*/
+	// init tipselector
+	tips := tipselection.TipSelectorStreamWork{}
+	tips.Init(&dag)
+	GlobalData.Tips = &tips
 
-	// start http server
-	server.Start(&store)
+	// Set genesis trunk and branch
+
 }
