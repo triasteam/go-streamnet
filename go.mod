@@ -6,15 +6,15 @@ require (
 	github.com/awalterschulze/gographviz v2.0.1+incompatible
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/protobuf v1.4.2
-	golang.org/x/net v0.0.0-20190311183353-d8887717615a
-	google.golang.org/grpc v1.27.0
-	google.golang.org/protobuf v1.25.0
 	github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.2.2
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c
 	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/tools v0.0.0-20200809012840-6f4f008689da // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	google.golang.org/grpc v1.27.0
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.2.2
 )
