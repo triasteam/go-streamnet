@@ -12,7 +12,7 @@ import (
 func StoreMessage(message *types.StoreData) error {
 	// Tipselection
 	// Check genesis
-	txToApprove := sn.Tips.GetTransactionsToApprove(15, types.NILHASH)
+	txToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
 
 	// Transaction
 	tx := types.Transaction{}
