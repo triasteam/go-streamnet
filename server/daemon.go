@@ -11,8 +11,6 @@ import (
 	streamnet_conf "github.com/triasteam/go-streamnet/config"
 	"github.com/triasteam/go-streamnet/streamnet"
 	"google.golang.org/grpc"
-
-	streamnet_conf "github.com/triasteam/go-streamnet/config"
 )
 
 var (
