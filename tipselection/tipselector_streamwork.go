@@ -11,7 +11,8 @@ type TipSelectorStreamWork struct {
 	cal RatingCalculator
 }
 
-func Init() {
+func (tips *TipSelectorStreamWork) Init(dag *dag.Dag) {
+	tips.dag = dag
 
 }
 

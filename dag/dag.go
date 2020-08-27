@@ -49,29 +49,28 @@ type Dag struct {
 }
 
 // Init return a new Dag struct.
-func Init(db *store.Storage) *Dag {
-	return &Dag{
-		graph:             make(map[types.Hash]types.Set),
-		parentGraph:       make(map[types.Hash]types.Hash),
-		revGraph:          make(map[types.Hash]types.Set),
-		parentRevGraph:    make(map[types.Hash]types.Set),
-		score:             make(map[types.Hash]float64),
-		parentScore:       make(map[types.Hash]float64),
-		freshScore:        false,
-		degrees:           make(map[types.Hash]int64),
-		topOrder:          make(map[int64]types.Set),
-		topOrderStreaming: make(map[int64]types.Set),
-		subGraph:          make(map[types.Hash]types.Set),
-		subRevGraph:       make(map[types.Hash]types.Set),
-		subParentGraph:    make(map[types.Hash]types.Hash),
-		subParentRevGraph: make(map[types.Hash]types.Set),
-		levels:            make(map[types.Hash]int64),
-		namemap:           make(map[types.Hash]string),
-		totalDepth:        0,
-		store:             db,
-		pivotChain:        types.List{},
-		ancestors:         types.NewStack(),
-	}
+// TODO = init dag with data stored in database after restart.
+func (dag *Dag) Init(db *store.Storage) {
+	dag.graph = make(map[types.Hash]types.Set)
+	dag.parentGraph = make(map[types.Hash]types.Hash)
+	dag.revGraph = make(map[types.Hash]types.Set)
+	dag.parentRevGraph = make(map[types.Hash]types.Set)
+	dag.score = make(map[types.Hash]float64)
+	dag.parentScore = make(map[types.Hash]float64)
+	dag.freshScore = false
+	dag.degrees = make(map[types.Hash]int64)
+	dag.topOrder = make(map[int64]types.Set)
+	dag.topOrderStreaming = make(map[int64]types.Set)
+	dag.subGraph = make(map[types.Hash]types.Set)
+	dag.subRevGraph = make(map[types.Hash]types.Set)
+	dag.subParentGraph = make(map[types.Hash]types.Hash)
+	dag.subParentRevGraph = make(map[types.Hash]types.Set)
+	dag.levels = make(map[types.Hash]int64)
+	dag.namemap = make(map[types.Hash]string)
+	dag.totalDepth = 0
+	dag.store = db
+	dag.pivotChain = types.List{}
+	dag.ancestors = types.NewStack()
 }
 
 // Close will free all the resources.
