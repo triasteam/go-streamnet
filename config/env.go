@@ -33,13 +33,6 @@ type GrpcConfig struct {
 	Port string `yaml:"Port"`
 }
 
-/*
-
-Redis:
-  Port: 6379
-  Password:
-  DB: 0
-*/
 type StreamNetconf struct {
 	DBPath string      `yaml:"DBPath"`
 	Port   string      `yaml:"Port"`
