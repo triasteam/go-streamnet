@@ -25,13 +25,21 @@ var (
 
 // Start a http server
 func Start(store *store.Storage) {
-	//TODO: find a better way to check whether server has started.
+
+	go startWeb(store)
+	go startGrpc()
+
+	select {}
+
+}
+
+func startWeb(store *store.Storage) {
 	if server != nil {
 		log.Printf("Server already started.\n")
 		return
 	}
 
-	log.Printf("Go-StreamNet server is starting...\n")
+	log.Printf("Go-StreamNet web-server is starting...\n")
 
 	// set db
 	db = store
@@ -49,7 +57,10 @@ func Start(store *store.Storage) {
 	}
 
 	log.Fatal(server.ListenAndServe())
+}
 
+func startGrpc() {
+	log.Printf("Go-StreamNet grpc-server is starting...\n")
 	lis, err := net.Listen("tcp", streamnet_conf.EnvConfig.GRPC.Port)
 	if err != nil {
 		log.Fatalf("failed to listen : %v", err)
@@ -59,7 +70,6 @@ func Start(store *store.Storage) {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
 }
 
 // Stop the server
