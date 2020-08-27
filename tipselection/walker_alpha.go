@@ -51,7 +51,7 @@ func (walker *WalkerAlpha) selectApprover(tailHash types.Hash, ratings map[types
 }
 
 func findNextValidTail(ratings map[types.Hash]int, approvers types.Set, walkValidator WalkValidator) types.Hash {
-	nextTailHash := types.NILHASH
+	nextTailHash := types.NilHash
 
 	//select next tail to step to
 	for nextTailHash == types.NewHash(nil) {
@@ -135,5 +135,5 @@ func findTailIfValid(transactionHash types.Hash, validator WalkValidator) types.
 		return tailHash
 	}
 	return Optional.empty()*/
-	return types.NILHASH
+	return types.NilHash
 }

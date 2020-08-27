@@ -29,5 +29,5 @@ func (tf *TailFinderImpl) findTail(hash types.Hash) types.Hash {
 	if tx.getCurrentIndex() == 0 {
 		return Optional.of(tx.getHash())
 	}*/
-	return types.NILHASH
+	return types.NilHash
 }
