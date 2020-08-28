@@ -86,8 +86,132 @@ func TestGetPivot(t *testing.T) {
 // 	a.Equal(pivot, genesis, "pivot is not genesis")
 // }
 
-// test totalOrder
+// test totalOrder, G <A,B<C,D<E
 func TestGetTotalOrder(t *testing.T) {
+	// mock graph
+	s := store.Storage{}
+	s.Init("/tmp/gorocksdb_test")
+	d := Dag{}
+	d.Init(&s)
+
+	X := types.NewHashString("X")
+	Y := types.NewHashString("Y")
+	genesis := types.NewHashString("genesis")
+	A := types.NewHashString("A")
+	B := types.NewHashString("B")
+	C := types.NewHashString("C")
+	D := types.NewHashString("D")
+	E := types.NewHashString("E")
+
+	alias := map[types.Hash]string{}
+	alias[genesis] = "genesis"
+	alias[A] = "A"
+	alias[B] = "B"
+	alias[C] = "C"
+	alias[D] = "D"
+	alias[E] = "E"
+
+	// set genesis
+	d.genesis = genesis
+	// fill graph
+	d.graph[genesis] = types.NewSet()
+	d.graph[genesis].Add(X)
+	d.graph[genesis].Add(Y)
+
+	d.graph[A] = types.NewSet()
+	d.graph[A].Add(genesis)
+	d.graph[A].Add(genesis)
+
+	d.graph[B] = types.NewSet()
+	d.graph[B].Add(genesis)
+	d.graph[B].Add(genesis)
+
+	d.graph[C] = types.NewSet()
+	d.graph[C].Add(A)
+	d.graph[C].Add(B)
+
+	d.graph[D] = types.NewSet()
+	d.graph[D].Add(B)
+	d.graph[D].Add(B)
+
+	d.graph[E] = types.NewSet()
+	d.graph[E].Add(C)
+	d.graph[E].Add(D)
+
+	// file revGraph
+	d.revGraph[X] = types.NewSet()
+	d.revGraph[X].Add(genesis)
+
+	d.revGraph[Y] = types.NewSet()
+	d.revGraph[Y].Add(genesis)
+
+	d.revGraph[genesis] = types.NewSet()
+	d.revGraph[genesis].Add(A)
+	d.revGraph[genesis].Add(B)
+
+	d.revGraph[A] = types.NewSet()
+	d.revGraph[A].Add(C)
+
+	d.revGraph[B] = types.NewSet()
+	d.revGraph[B].Add(C)
+	d.revGraph[B].Add(D)
+
+	d.revGraph[C] = types.NewSet()
+	d.revGraph[C].Add(E)
+
+	d.revGraph[D] = types.NewSet()
+	d.revGraph[D].Add(E)
+	// fill parentGraph
+	d.parentGraph[genesis] = X
+	d.parentGraph[A] = genesis
+	d.parentGraph[B] = genesis
+	d.parentGraph[C] = A
+	d.parentGraph[D] = B
+	d.parentGraph[E] = C
+	// fill parentRevGraph
+	d.parentRevGraph[X] = types.NewSet()
+	d.parentRevGraph[X].Add(genesis)
+
+	d.parentRevGraph[genesis] = types.NewSet()
+	d.parentRevGraph[genesis].Add(A)
+	d.parentRevGraph[genesis].Add(B)
+
+	d.parentRevGraph[A] = types.NewSet()
+	d.parentRevGraph[A].Add(C)
+
+	d.parentRevGraph[B] = types.NewSet()
+	d.parentRevGraph[B].Add(D)
+
+	d.parentRevGraph[C] = types.NewSet()
+	d.parentRevGraph[C].Add(E)
+
+	// d.parentRevGraph[D] = types.NewSet()
+	// d.parentRevGraph[D].Add(E)
+	// file score
+	d.score[genesis] = 6
+	d.score[A] = 5
+	d.score[B] = 4
+	d.score[C] = 3
+	d.score[D] = 2
+	d.score[E] = 1
+
+	d.parentScore[genesis] = 6.0
+	d.parentScore[A] = 5
+	d.parentScore[B] = 4
+	d.parentScore[C] = 3
+	d.parentScore[D] = 2
+	d.parentScore[E] = 1
+
+	to := d.GetTotalOrder()
+	t.Log("total order is : ", to)
+	for idx, v := range to {
+		t.Log(idx)
+		t.Log(alias[v])
+	}
+}
+
+// simple dag: G<A<B<C<D<E
+func TestGetTotalOrder2(t *testing.T) {
 	// mock graph
 	s := store.Storage{}
 	s.Init("/tmp/gorocksdb_test")
