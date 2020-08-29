@@ -76,7 +76,7 @@ func (d *Dag) Close() {
 }
 
 // Add puts one tx hash into dag.
-func (d *Dag) Add(key types.Hash, value *types.Transaction) bool {
+func (d *Dag) Add(key types.Hash, value *types.Transaction) error {
 	trunk := value.GetTrunkTransactionHash()
 	branch := value.GetBranchTransactionHash()
 
@@ -89,7 +89,7 @@ func (d *Dag) Add(key types.Hash, value *types.Transaction) bool {
 
 	d.updateScore(key)
 
-	return true
+	return nil
 }
 
 func (d *Dag) updateGraph(key, trunk, branch types.Hash) {
@@ -182,7 +182,7 @@ func (d *Dag) GetPivotalHash(depth int) types.Hash {
 	if depth == -1 || depth >= d.pivotChain.Length() {
 		set := d.topOrderStreaming[1]
 		if set.IsEmpty() {
-			return types.NewHash(nil)
+			return types.NilHash
 		}
 		ret = set.List()[0]
 		return ret
@@ -202,7 +202,7 @@ func (d *Dag) PivotChain(start types.Hash) types.List {
 
 	list := types.List{}
 
-	if _, ok := d.graph[start]; start == types.NewHash(nil) || !ok {
+	if _, ok := d.graph[start]; start == types.NilHash || !ok {
 		return list
 	}
 
@@ -211,7 +211,7 @@ func (d *Dag) PivotChain(start types.Hash) types.List {
 	v, ok := d.parentRevGraph[start]
 	for ok && !v.IsEmpty() {
 		s := d.getMax(v)
-		if s == types.NewHash(nil) {
+		if s == types.NilHash {
 			return list
 		}
 
@@ -234,12 +234,12 @@ func (d *Dag) GetGenesis() types.Hash {
 			return key
 		}
 	}
-	return types.NewHash(nil)
+	return types.NilHash
 }
 
 func (d *Dag) getMax(set types.Set) types.Hash {
 	tmpMaxScore := -1.0
-	s := types.NewHash(nil)
+	s := types.NilHash
 
 	for _, block := range set.List() {
 		if v, ok := d.parentScore[block]; ok {
@@ -261,13 +261,13 @@ func (d *Dag) getMax(set types.Set) types.Hash {
 func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
 	d.graphLock.RLock()
 
-	if _, ok := d.graph[start]; start == types.NewHash(nil) || !ok {
-		return types.NewHash(nil)
+	if _, ok := d.graph[start]; start == types.NilHash || !ok {
+		return types.NilHash
 	}
 	v, ok := d.parentRevGraph[start]
 	for ok && !v.IsEmpty() {
 		s := d.getMax(v)
-		if s == types.NewHash(nil) {
+		if s == types.NilHash {
 			return start
 		}
 		start = s

@@ -9,7 +9,11 @@ type CumulativeWeightMemCalculator struct {
 	dag *dag.Dag
 }
 
-func (cu CumulativeWeightMemCalculator) Calculate(entryPoint types.Hash) map[types.Hash]int {
+func (cal *CumulativeWeightMemCalculator) Init(dag *dag.Dag) {
+	cal.dag = dag
+}
+
+func (cu *CumulativeWeightMemCalculator) Calculate(entryPoint types.Hash) map[types.Hash]int {
 	r := make(map[types.Hash]int)
 
 	visited := types.NewSet()
