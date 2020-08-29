@@ -9,6 +9,6 @@ import (
 // StreamNet is the biggest structure.
 type StreamNet struct {
 	Dag   *dag.Dag
-	Store *store.Storage
-	Tips  *tipselection.TipSelectorStreamWork
+	Store store.StorageProvider
+	Tips  tipselection.TipSelector
 }

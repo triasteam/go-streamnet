@@ -49,10 +49,11 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 
 	// Tipselection
 	// Check genesis
-	//txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
-	txsToApprove := types.List{}
-	txsToApprove.Append(config.GenesisTrunk)
-	txsToApprove.Append(config.GenesisBranch)
+	txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
+	if txsToApprove.Length() == 0 {
+		txsToApprove.Append(config.GenesisTrunk)
+		txsToApprove.Append(config.GenesisBranch)
+	}
 
 	// Transaction
 	tx := types.Transaction{}
