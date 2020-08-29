@@ -1,6 +1,9 @@
 package types
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 /*
 func TestList(t *testing.T) {
@@ -82,5 +85,22 @@ func TestList(t *testing.T) {
 
 	if !l.IsEmpty() {
 		t.Fatal("Not empty!")
+	}
+}
+
+func TestAppendAndIndex(t *testing.T) {
+	l := List{}
+	trunk := Sha256([]byte("StreamNet_Trunk"))
+	branch := Sha256([]byte("StreamNet_Branch"))
+
+	l.Append(trunk)
+	l.Append(branch)
+
+	tr1 := l.Index(0)
+	br1 := l.Index(1)
+	log.Println(tr1, br1)
+
+	if trunk != tr1 || branch != br1 {
+		log.Fatal("Add and get not same!")
 	}
 }
