@@ -40,6 +40,18 @@ func NewHashString(s string) Hash {
 	return NewHash([]byte(s))
 }
 
+func NewHashHex(hexString string) Hash {
+	str, err := hex.DecodeString(hexString)
+	if err != nil {
+		return NilHash
+	}
+
+	var h Hash
+	copy(h[:], str[:HashLen])
+
+	return h
+}
+
 func (h Hash) String() string {
 	var b = make([]byte, HashLen, HashLen)
 	copy(b[:], h[:])
