@@ -67,11 +67,20 @@ func (tx *Transaction) GetApprovers() Set {
 	return s
 }
 
-func (tx *Transaction) String() string {
+func (tx *Transaction) Bytes() ([]byte, error) {
 	b, err := json.Marshal(tx)
 	if err != nil {
 		log.Print("Json failed!")
-		return ""
+		return nil, err
 	}
-	return string(b)
+	return b, nil
+}
+
+func (tx *Transaction) String() (string, error) {
+	b, err := tx.Bytes()
+	if err != nil {
+		return "", err
+	} else {
+		return string(b), nil
+	}
 }
