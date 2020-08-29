@@ -22,40 +22,40 @@ func NewStack() *Stack {
 }
 
 // Return the number of items in the stack
-func (this *Stack) Len() int {
-	return this.length
+func (stack *Stack) Len() int {
+	return stack.length
 }
 
-func (this *Stack) Empty() bool {
-	return this.length == 0
+func (stack *Stack) Empty() bool {
+	return stack.length == 0
 }
 
 // View the top item on the stack
-func (this *Stack) Peek() Hash {
-	if this.length == 0 {
+func (stack *Stack) Peek() Hash {
+	if stack.length == 0 {
 		return NewHash(nil)
 	}
-	return this.top.value
+	return stack.top.value
 }
 
 // Pop the top item of the stack and return it
-func (this *Stack) Pop() Hash {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-	if this.length == 0 {
+func (stack *Stack) Pop() Hash {
+	stack.lock.Lock()
+	defer stack.lock.Unlock()
+	if stack.length == 0 {
 		return NewHash(nil)
 	}
-	n := this.top
-	this.top = n.prev
-	this.length--
+	n := stack.top
+	stack.top = n.prev
+	stack.length--
 	return n.value
 }
 
 // Push a value onto the top of the stack
-func (this *Stack) Push(value Hash) {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-	n := &node{value, this.top}
-	this.top = n
-	this.length++
+func (stack *Stack) Push(value Hash) {
+	stack.lock.Lock()
+	defer stack.lock.Unlock()
+	n := &node{value, stack.top}
+	stack.top = n
+	stack.length++
 }
