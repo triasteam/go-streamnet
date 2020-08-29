@@ -1,6 +1,9 @@
 package types
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 func TestNewHash(t *testing.T) {
 	h := NewHash(nil)
@@ -24,5 +27,14 @@ func TestHashEqual(t *testing.T) {
 	h2 := NewHashString("hello")
 	if h1 != h2 {
 		t.Fatal("Unequal")
+	}
+}
+
+func TestNewHashHex(t *testing.T) {
+	str := "a6d3735d908f57647e2bee133643b6163c3888a245c2dea9980693d0d617d48e"
+	h := NewHashHex(str)
+	log.Print(h)
+	if h[0] != 0xa6 || h[HashLen-1] != 0x8e {
+		log.Fatal("Hex decode failed!")
 	}
 }
