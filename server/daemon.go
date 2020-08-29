@@ -14,8 +14,10 @@ import (
 )
 
 var (
-	server *http.Server
-	sn     *streamnet.StreamNet
+	address = "localhost"
+	rpcPort string
+	server  *http.Server
+	sn      *streamnet.StreamNet
 )
 
 func Start(stream *streamnet.StreamNet) {
@@ -55,7 +57,8 @@ func startWeb(stream *streamnet.StreamNet) {
 
 func startGrpc() {
 	log.Printf("Go-StreamNet grpc-server is starting...\n")
-	lis, err := net.Listen("tcp", streamnet_conf.EnvConfig.GRPC.Port)
+	rpcPort = streamnet_conf.EnvConfig.GRPC.Port
+	lis, err := net.Listen("tcp", rpcPort)
 	if err != nil {
 		log.Fatalf("failed to listen : %v", err)
 	}
