@@ -106,9 +106,8 @@ func (l *List) Index(index int) (ret Hash) {
 	pre := l.headNode
 	if index <= 0 {
 		ret = pre.Data
-		l.headNode = pre.Next
 	} else if index > l.Length() {
-		ret = NewHash(nil)
+		ret = NilHash
 	} else {
 		count := 0
 		for count != index-1 && pre.Next != nil {
