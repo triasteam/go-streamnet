@@ -1,19 +1,27 @@
 package types
 
+import (
+	"encoding/json"
+	"log"
+	"time"
+)
+
 // Transaction is a core struct.
 type Transaction struct {
-	bytes   []byte
 	address Hash
+
+	DataHash Hash
 
 	trunk  Hash
 	branch Hash
 
-	value     int64
-	timestamp int64
+	Timestamp time.Time
 
 	weightMagnitude int64
 	nonce           []byte
 
+	//bytes   []byte
+	//value     int64
 	//currentIndex                  int64
 	//lastIndex                     int64
 	//attachmentTimestamp           int64
@@ -56,4 +64,13 @@ func (tx *Transaction) GetApprovers() Set {
 	s := NewSet()
 
 	return s
+}
+
+func (tx *Transaction) String() string {
+	b, err := json.Marshal(tx)
+	if err != nil {
+		log.Print("Json failed!")
+		return ""
+	}
+	return string(b)
 }
