@@ -62,7 +62,8 @@ func (tx *Transaction) GetBranchTransactionHash() Hash {
 
 func (tx *Transaction) GetApprovers() Set {
 	s := NewSet()
-
+	/*s.Add(tx.trunk)
+	s.Add(tx.branch)*/
 	return s
 }
 
