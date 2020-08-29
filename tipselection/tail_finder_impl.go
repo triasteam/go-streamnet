@@ -9,6 +9,10 @@ type TailFinderImpl struct {
 	dag *dag.Dag
 }
 
+func (tf *TailFinderImpl) Init(dag *dag.Dag) {
+	tf.dag = dag
+}
+
 func (tf *TailFinderImpl) findTail(hash types.Hash) types.Hash {
 	/*tx := types.FromHash(tf.dag, hash)
 

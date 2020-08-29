@@ -6,14 +6,33 @@ import (
 )
 
 type TipSelectorStreamWork struct {
-	dag *dag.Dag
-	ep  EntryPoint
-	cal RatingCalculator
+	dag    *dag.Dag
+	ep     EntryPoint
+	cal    RatingCalculator
+	walker Walker
 }
 
 func (tips *TipSelectorStreamWork) Init(dag *dag.Dag) {
 	tips.dag = dag
 
+	// todo: using config to choose entrypoint selector.
+	ep := EntryPointKatz{}
+	ep.Init(dag)
+	tips.ep = &ep
+
+	// todo: using config to choose rating calculator.
+	cal := CumulativeWeightMemCalculator{}
+	cal.Init(dag)
+	tips.cal = &cal
+
+	// todo: using config to choose tail finder.
+	tf := TailFinderImpl{}
+	tf.Init(dag)
+
+	// todo: using config to choose walker.
+	walker := WalkerAlpha{}
+	walker.Init(dag, &tf)
+	tips.walker = &walker
 }
 
 func (ts *TipSelectorStreamWork) GetTransactionsToApprove(depth int, reference types.Hash) types.List {
@@ -24,7 +43,7 @@ func (ts *TipSelectorStreamWork) GetTransactionsToApprove(depth int, reference t
 	tips.Add(parentTip)
 
 	// Reference tip
-	entryPoint := ts.ep.GetEntryPoint(ts.dag, depth)
+	entryPoint := ts.ep.GetEntryPoint(depth)
 
 	rating := ts.cal.Calculate(entryPoint)
 

@@ -12,14 +12,16 @@ import (
 const ALPHA = 0.001
 
 type WalkerAlpha struct {
-	dag *dag.Dag
+	dag        *dag.Dag
+	tailFinder TailFinder
 }
 
-func (walker *WalkerAlpha) Init(d *dag.Dag) {
+func (walker *WalkerAlpha) Init(d *dag.Dag, tf TailFinder) {
 	walker.dag = d
+	walker.tailFinder = tf
 }
 
-func (walker *WalkerAlpha) walk(entryPoint types.Hash, ratings map[types.Hash]int, walkValidator WalkValidator) types.Hash {
+func (walker *WalkerAlpha) Walk(entryPoint types.Hash, ratings map[types.Hash]int, walkValidator WalkValidator) types.Hash {
 	if !walkValidator.IsValid(entryPoint) {
 		return types.NewHash(nil)
 	}

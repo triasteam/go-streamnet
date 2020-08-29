@@ -46,11 +46,12 @@ func callApp(data string) string {
 }
 
 func StoreMessage(message *types.StoreData) ([]byte, error) {
-
 	// Tipselection
-	// Check genesis
 	txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
-	if txsToApprove.Length() == 0 {
+	if txsToApprove.Index(0) == types.NilHash || txsToApprove.Index(1) == types.NilHash {
+		// Using genesis.
+		txsToApprove.RemoveAtIndex(0)
+		txsToApprove.RemoveAtIndex(0)
 		txsToApprove.Append(config.GenesisTrunk)
 		txsToApprove.Append(config.GenesisBranch)
 	}
@@ -65,19 +66,34 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	tx.DataHash = h
 	log.Printf("Grpc result: %s\n", h)
 
-	// POW
+	// todo: POW
 
 	// timestamp
 	tx.Timestamp = time.Now()
 
+	// tx hash
+	txBytes, err := tx.Bytes()
+	if err != nil {
+		log.Printf("Transaction to bytes failed: %s\n", err)
+		return nil, err
+	}
+	txHash := types.Sha256(txBytes)
+
 	// Save to dag
+	err = sn.Dag.Add(txHash, &tx)
+	if err != nil {
+		log.Printf("Dag add tx failed: %s\n", err)
+		return nil, err
+	}
 
 	// Save to db
-	k, err := sn.Store.SaveValue([]byte(tx.String()))
+	k, err := sn.Store.SaveValue(txBytes)
 	if err != nil {
 		log.Printf("Save data to database failed: %v\n", err)
 	}
 	log.Printf("Store to database successed!\n")
+
+	// todo: broadcast to neighbors.
 
 	return k, err
 }
