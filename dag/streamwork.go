@@ -184,7 +184,7 @@ func (d *Dag) StreamWork(block types.Hash) []types.Hash {
 
 // GetTotalOrder returns total order of the graph
 func (d *Dag) GetTotalOrder() []types.Hash {
-	pivot := d.getPivot(d.genesis)
+	pivot := d.getPivot(d.GetGenesis())
 	return d.StreamWork(pivot)
 }
 

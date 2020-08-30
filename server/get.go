@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -9,37 +8,35 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/triasteam/go-streamnet/abci/proto"
 	"github.com/triasteam/go-streamnet/types"
-	"google.golang.org/grpc"
 )
 
-func getRank(data []string) *proto.ResponseGetNoderank {
-	// create connection
-	conn, err := grpc.Dial(address+":"+rpcPort, grpc.WithInsecure())
-	if nil != conn {
-		defer conn.Close()
-	}
+// func getRank(data []string) *proto.ResponseGetNoderank {
+// 	// create connection
+// 	conn, err := grpc.Dial(address+":"+rpcPort, grpc.WithInsecure())
+// 	if nil != conn {
+// 		defer conn.Close()
+// 	}
 
-	if nil != err {
-		fmt.Printf("Connect to grpc server failed: %s\n", err)
-		return nil
-	}
+// 	if nil != err {
+// 		fmt.Printf("Connect to grpc server failed: %s\n", err)
+// 		return nil
+// 	}
 
-	client := proto.NewStreamnetServiceClient(conn)
+// 	client := proto.NewStreamnetServiceClient(conn)
 
-	req := &proto.RequestGetNoderank{
-		BlockHash: data,
-	}
+// 	req := &proto.RequestGetNoderank{
+// 		BlockHash: data,
+// 	}
 
-	result, _ := client.GetNoderank(context.Background(), req)
-	if nil != result {
-		fmt.Printf("%s \n", result.GetTeectx)
-	} else {
-		fmt.Println("response is nil")
-	}
-	return result
-}
+// 	result, _ := client.GetNoderank(context.Background(), req)
+// 	if nil != result {
+// 		fmt.Printf("%s \n", result.GetTeectx)
+// 	} else {
+// 		fmt.Println("response is nil")
+// 	}
+// 	return result
+// }
 
 // GetHandle process the 'get' request.
 func GetHandle(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +60,7 @@ func GetHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get data from db
-	// value, err := sn.Store.Get([]byte(hash))
+	value, err := sn.Store.Get([]byte(hash))
 	// if err != nil {
 	// 	log.Printf("Get error: %v.", err)
 	// 	return
@@ -71,17 +68,17 @@ func GetHandle(w http.ResponseWriter, r *http.Request) {
 	// log.Printf("Value = '%s'\n", value)
 
 	// get data from dag
-	value := sn.Dag.GetTotalOrder()
+	// value := sn.Dag.GetTotalOrder()
 
-	input := make([]string, len(value))
-	for _, b := range value {
-		b.String()
-		input = append(input, b.String())
-	}
+	// input := make([]string, len(value))
+	// for _, b := range value {
+	// 	b.String()
+	// 	input = append(input, b.String())
+	// }
 
-	response := getRank(input)
+	// response := getRank(input)
 
-	message, err := json.Marshal(response)
+	message, err := json.Marshal(value)
 	if err != nil {
 		panic("query page rank error.")
 	}

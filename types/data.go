@@ -38,3 +38,38 @@ type GetReq struct {
 type GetReply struct {
 	Value string
 }
+
+// QueryNodeReq is req param of QueryNodes
+type QueryNodeReq struct {
+	Period  uint32 `json:"period"`
+	NumRank uint32 `json:"numrank"`
+}
+
+// TeeCtx contains vote detail
+type TeeCtx struct {
+	Attester string  `json:"attester"`
+	Attestee string  `json:"attestee"`
+	Score    float64 `json:"score"`
+	Time     string  `json:"time,omitempty"`
+	Nonce    int64   `json:"nonce,omitempty"`
+}
+
+// TeeScore contains score of attestee
+type TeeScore struct {
+	Attestee string  `json:"attestee"`
+	Score    float64 `json:"score"`
+}
+
+// DataTee contains teescore and teectx
+type DataTee struct {
+	Teescore []TeeScore `json:"teescore"`
+	Teectx   []TeeCtx   `json:"teectx"`
+}
+
+// Message return result
+type Message struct {
+	Code      uint32
+	Timestamp int64
+	Message   string
+	Data      DataTee
+}
