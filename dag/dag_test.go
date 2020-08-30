@@ -3,13 +3,16 @@ package dag
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/triasteam/go-streamnet/config"
+
 	"github.com/triasteam/go-streamnet/store"
 	"github.com/triasteam/go-streamnet/types"
 )
 
 func TestInit(t *testing.T) {
 	s := store.Storage{}
+	defer s.Close()
+
 	s.Init("/tmp/gorocksdb_test")
 	d := Dag{}
 	d.Init(&s)
@@ -17,20 +20,47 @@ func TestInit(t *testing.T) {
 	t.Log(d)
 }
 
-func TestSave(t *testing.T) {
+func TestAdd(t *testing.T) {
+	// storage
 	s := store.Storage{}
+	defer s.Close()
 	s.Init("/tmp/gorocksdb_test")
+
+	// dag
 	d := Dag{}
 	d.Init(&s)
 
-	key := types.NewHashString("genesis")
-	value := types.FromHash(key)
+	// transaction
+	trunk := config.GenesisTrunk
+	branch := config.GenesisBranch
+	l := types.List{}
+	l.Append(trunk)
+	l.Append(branch)
+	tx := types.Transaction{}
+	tx.Init(l)
 
-	d.Add(key, value)
-	pivot := d.getPivot(key)
-	t.Log(pivot)
+	bytes, _ := tx.Bytes()
+	key := types.Sha256(bytes)
 
-	a := assert.New(t)
+	// add
+	d.Add(key, &tx)
 
-	a.Equal(pivot, key, "there is only one genesis block")
+	// test updateGraph
+	t.Log("graph: ", d.graph)
+	t.Log("parentGraph: ", d.parentGraph)
+	t.Log("revGraph: ", d.revGraph)
+	t.Log("parentRevGraph: ", d.parentRevGraph)
+	t.Log("degrees: ", d.degrees)
+
+	// test updateTopologicalOrder
+	t.Log("topOrderStreaming: ", d.topOrderStreaming)
+	t.Log("levels: ", d.levels)
+	t.Log("totalDepth: ", d.totalDepth)
+
+	// test updateScore
+	t.Log("score: ", d.score)
+	t.Log("parentScore: ", d.parentScore)
+
+	//pivot := d.getPivot(key)
+
 }

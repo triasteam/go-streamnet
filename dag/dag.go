@@ -46,7 +46,6 @@ type Dag struct {
 }
 
 // Init return a new Dag struct.
-// TODO = init dag with data stored in database after restart.
 func (dag *Dag) Init(db *store.Storage) {
 	dag.graph = make(map[types.Hash]types.Set)
 	dag.parentGraph = make(map[types.Hash]types.Hash)
@@ -68,6 +67,9 @@ func (dag *Dag) Init(db *store.Storage) {
 	dag.store = db
 	dag.pivotChain = types.List{}
 	dag.ancestors = types.NewStack()
+
+	// TODO: init dag with data stored in database if restart.
+	dag.load()
 }
 
 // Close will free all the resources.
@@ -94,7 +96,7 @@ func (d *Dag) Add(key types.Hash, tx *types.Transaction) error {
 
 func (d *Dag) updateGraph(key, trunk, branch types.Hash) {
 	// Approve graph
-	if _, ok := d.graph[key]; !ok {
+	if _, exist := d.graph[key]; !exist {
 		d.graph[key] = types.NewSet()
 	}
 	d.graph[key].Add(trunk)
@@ -104,29 +106,28 @@ func (d *Dag) updateGraph(key, trunk, branch types.Hash) {
 	d.parentGraph[key] = trunk
 
 	// Approvee graph
-	if _, ok := d.revGraph[trunk]; !ok {
+	if _, exist := d.revGraph[trunk]; !exist {
 		d.revGraph[trunk] = types.NewSet()
 	}
 	d.revGraph[trunk].Add(key)
-	if _, ok := d.revGraph[branch]; !ok {
+	if _, exist := d.revGraph[branch]; !exist {
 		d.revGraph[branch] = types.NewSet()
 	}
 	d.revGraph[branch].Add(key)
 
-	if _, ok := d.parentRevGraph[trunk]; !ok {
+	if _, exist := d.parentRevGraph[trunk]; !exist {
 		d.parentRevGraph[trunk] = types.NewSet()
 	}
 	d.parentRevGraph[trunk].Add(key)
 
 	// update degrees
-	if _, ok := d.degrees[key]; !ok || d.degrees[key] == 0 {
+	if _, exist := d.degrees[key]; !exist || d.degrees[key] == 0 {
 		d.degrees[key] = 2
 	}
-
-	if _, ok := d.degrees[trunk]; !ok {
+	if _, exist := d.degrees[trunk]; !exist {
 		d.degrees[trunk] = 0
 	}
-	if _, ok := d.degrees[branch]; !ok {
+	if _, exist := d.degrees[branch]; !exist {
 		d.degrees[branch] = 0
 	}
 }
@@ -146,17 +147,18 @@ func (d *Dag) updateTopologicalOrder(key, trunk, branch types.Hash) {
 		// Or we won't call Add if trunk or branch not exist!!!!
 		trunkLevel := d.levels[trunk]
 		branchLevel := d.levels[branch]
-		lvl := utils.Min(trunkLevel, branchLevel) + 1
-		if _, ok := d.topOrderStreaming[lvl]; !ok {
-			d.topOrderStreaming[lvl] = types.NewSet()
+		level := utils.Min(trunkLevel, branchLevel) + 1
+		if _, exist := d.topOrderStreaming[level]; !exist {
+			d.topOrderStreaming[level] = types.NewSet()
 			d.totalDepth++
 		}
-		d.topOrderStreaming[lvl].Add(key)
-		d.levels[key] = lvl
+		d.topOrderStreaming[level].Add(key)
+		d.levels[key] = level
 	}
 }
 
 func (d *Dag) updateScore(key types.Hash) {
+	// todo: use config to choose score algorithm.
 	scoreAlg := "CUM_WEIGHT"
 
 	if scoreAlg == "CUM_WEIGHT" {
@@ -172,10 +174,7 @@ func (d *Dag) updateScore(key types.Hash) {
 	d.freshScore = false
 }
 
-func computeToplogicalOrder() {
-
-}
-
+// GetPivotalHash returns the pivot hash of dag.
 func (d *Dag) GetPivotalHash(depth int) types.Hash {
 	var ret types.Hash
 	d.buildPivotChain()
@@ -237,6 +236,25 @@ func (d *Dag) GetGenesis() types.Hash {
 	return types.NilHash
 }
 
+func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
+	d.graphLock.RLock()
+
+	if _, ok := d.graph[start]; start == types.NilHash || !ok {
+		return types.NilHash
+	}
+	v, ok := d.parentRevGraph[start]
+	for ok && !v.IsEmpty() {
+		s := d.getMax(v)
+		if s == types.NilHash {
+			return start
+		}
+		start = s
+		v, ok = d.parentRevGraph[start]
+	}
+	return start
+
+}
+
 func (d *Dag) getMax(set types.Set) types.Hash {
 	tmpMaxScore := -1.0
 	s := types.NilHash
@@ -258,29 +276,7 @@ func (d *Dag) getMax(set types.Set) types.Hash {
 	return s
 }
 
-func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
-	d.graphLock.RLock()
-
-	if _, ok := d.graph[start]; start == types.NilHash || !ok {
-		return types.NilHash
-	}
-	v, ok := d.parentRevGraph[start]
-	for ok && !v.IsEmpty() {
-		s := d.getMax(v)
-		if s == types.NilHash {
-			return start
-		}
-		start = s
-		v, ok = d.parentRevGraph[start]
-	}
-	return start
-
-}
-
 func (d *Dag) BuildGraph() {
-}
-
-func (d *Dag) ComputeScore() {
 }
 
 func (d *Dag) GetChild(block types.Hash) types.Set {

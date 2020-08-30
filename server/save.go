@@ -19,13 +19,13 @@ import (
 
 func callApp(data string) string {
 	// create connection
-	conn, err := grpc.Dial(address+":"+rpcPort, grpc.WithInsecure())
+	conn, err := grpc.Dial(address+rpcPort, grpc.WithInsecure())
 	if nil != conn {
 		defer conn.Close()
 	}
 
-	if nil != err {
-		fmt.Printf("Connect to grpc server failed: %s\n", err)
+	if err != nil {
+		log.Printf("Connect to grpc server failed: %s\n", err)
 		return ""
 	}
 
@@ -35,11 +35,9 @@ func callApp(data string) string {
 		BlockInfo: data,
 	}
 
-	result, _ := client.StoreBlock(context.Background(), req)
-	if nil != result {
-		fmt.Printf("%s \n", result.Data)
-	} else {
-		fmt.Println("response is nil")
+	result, err := client.StoreBlock(context.Background(), req)
+	if err != nil {
+		log.Println("Response is nil!")
 	}
 
 	return result.Data
@@ -47,14 +45,17 @@ func callApp(data string) string {
 
 func StoreMessage(message *types.StoreData) ([]byte, error) {
 	// Tipselection
-	txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
+	/*txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
 	if txsToApprove.Index(0) == types.NilHash || txsToApprove.Index(1) == types.NilHash {
 		// Using genesis.
 		txsToApprove.RemoveAtIndex(0)
 		txsToApprove.RemoveAtIndex(0)
 		txsToApprove.Append(config.GenesisTrunk)
 		txsToApprove.Append(config.GenesisBranch)
-	}
+	}*/
+	txsToApprove := types.List{}
+	txsToApprove.Append(config.GenesisTrunk)
+	txsToApprove.Append(config.GenesisBranch)
 
 	// Transaction
 	tx := types.Transaction{}
@@ -106,7 +107,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	var params types.StoreData
 	err := decoder.Decode(&params)
 	if err != nil {
-		fmt.Printf("Decode error: %v.", err)
+		log.Printf("Decode error: %v.", err)
 		return
 	}
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
@@ -114,7 +115,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	// save data to dag & db
 	key, err := StoreMessage(&params)
 	if err != nil {
-		fmt.Printf("Save message error: %v.", err)
+		log.Printf("Save message error: %v.", err)
 		return
 	}
 

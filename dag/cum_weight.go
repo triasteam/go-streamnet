@@ -1,6 +1,8 @@
 package dag
 
 import (
+	"log"
+
 	"github.com/triasteam/go-streamnet/types"
 )
 
@@ -9,25 +11,25 @@ type CumulateWeight struct{}
 // Update adds wight to score in a DFS(深度优先遍历) way
 func (cw CumulateWeight) Update(graph map[types.Hash]types.Set, score map[types.Hash]float64, key types.Hash, weight float64) {
 	queue := types.List{}
-
 	queue.Append(key)
+
 	visited := types.NewSet()
 	visited.Add(key)
 
 	for queue.Length() != 0 {
-		h := queue.RemoveAtIndex(0)
-		for _, e := range graph[h].List() {
-			_, ok1 := graph[e]
-			ok2 := visited.Has(e)
-			if ok1 && !ok2 {
-				queue.Append(e)
-				visited.Add(e)
+		cur := queue.RemoveAtIndex(0)
+		for _, parent := range graph[cur].List() {
+			_, exist := graph[parent]
+			visit := visited.Has(parent)
+			if exist && !visit {
+				queue.Append(parent)
+				visited.Add(parent)
 			}
 		}
-		if _, ok := score[h]; !ok {
-			score[h] = 0.0
+		if _, exist := score[cur]; !exist {
+			score[cur] = 0.0
 		}
-		score[h] = score[h] + weight
+		score[cur] = score[cur] + weight
 	}
 }
 
@@ -39,13 +41,13 @@ func (cw CumulateWeight) UpdateParentScore(parentGraph map[types.Hash]types.Hash
 	_, ok := parentGraph[start]
 	for ok {
 		if visited.Has(start) {
-			//log.error("Circle exist: " + start)
+			log.Printf("Error!!! Circle exist: %s\n", start)
 			break
 		} else {
 			visited.Add(start)
 		}
 
-		if _, o := parentScore[start]; !o {
+		if _, exist := parentScore[start]; !exist {
 			parentScore[start] = 0.0
 		}
 		parentScore[start] = parentScore[start] + weight
