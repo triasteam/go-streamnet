@@ -19,7 +19,7 @@ func (c *Calculator) Calculate(entryPoint types.Hash) map[types.Hash]int {
 
 	for !queue.IsEmpty() {
 		h := queue.RemoveAtIndex(0)
-		for _, e := range c.dag.GetChild(h).List() {
+		for _, e := range c.dag.GetChildren(h).List() {
 			if c.dag.Contains(e) && !visited.Has(e) {
 				queue.Append(e)
 				visited.Add(e)
