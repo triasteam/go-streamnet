@@ -5,6 +5,7 @@ import (
 	//"bytes"
 
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/triasteam/go-streamnet/streamnet"
@@ -24,6 +25,10 @@ import (
 var GlobalData streamnet.StreamNet
 
 func main() {
+	// set log config
+	// todo: in debug mode, set the log module as following; if not in debug mode, don't set it.
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
 	initStreamWork()
 
 	// start http server
