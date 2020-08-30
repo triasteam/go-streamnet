@@ -9,7 +9,7 @@ import (
 type CumulateWeight struct{}
 
 // Update adds wight to score in a DFS(深度优先遍历) way
-func (cw CumulateWeight) Update(graph map[types.Hash]types.Set, score map[types.Hash]float64, key types.Hash, weight float64) {
+func (cw CumulateWeight) UpdateScore(graph map[types.Hash]types.Set, score map[types.Hash]float64, key types.Hash, weight float64) {
 	queue := types.List{}
 	queue.Append(key)
 
@@ -34,7 +34,7 @@ func (cw CumulateWeight) Update(graph map[types.Hash]types.Set, score map[types.
 }
 
 // UpdateParentScore adds weight to score in a linked list way.
-func (cw CumulateWeight) UpdateParentScore(parentGraph map[types.Hash]types.Hash, parentScore map[types.Hash]float64, key types.Hash, weight float64) {
+func (cw CumulateWeight) UpdateTrunkScore(parentGraph map[types.Hash]types.Hash, parentScore map[types.Hash]float64, key types.Hash, weight float64) {
 	start := key
 	visited := types.NewSet()
 
@@ -96,7 +96,7 @@ func (cw CumulateWeight) Compute(revGraph, graph map[types.Hash]types.Set, genes
 				}
 			}
 		}
-		cw.Update(graph, ret, h, 1.0)
+		cw.UpdateScore(graph, ret, h, 1.0)
 	}
 	return ret
 }

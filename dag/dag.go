@@ -10,16 +10,16 @@ import (
 
 // Dag is the most important struct in the whole procedure.
 type Dag struct {
-	graph       map[types.Hash]types.Set
-	parentGraph map[types.Hash]types.Hash
+	graph       map[types.Hash]types.Set  // parents of one node
+	parentGraph map[types.Hash]types.Hash // trunk parent of one node
 
-	revGraph       map[types.Hash]types.Set
-	parentRevGraph map[types.Hash]types.Set
+	revGraph       map[types.Hash]types.Set // children of one node
+	parentRevGraph map[types.Hash]types.Set // children of one trunk node
 
-	degrees map[types.Hash]int64
+	degrees map[types.Hash]int64 // every node's degree, for streamwork
 
-	score       map[types.Hash]float64
-	parentScore map[types.Hash]float64
+	score       map[types.Hash]float64 // every node's score
+	parentScore map[types.Hash]float64 // every trunk node's score
 	freshScore  bool
 
 	topOrder          map[int64]types.Set
@@ -162,22 +162,22 @@ func (d *Dag) updateScore(key types.Hash) {
 	scoreAlg := "CUM_WEIGHT"
 
 	if scoreAlg == "CUM_WEIGHT" {
-		CumulateWeight{}.Update(d.graph, d.score, key, 1)
-		CumulateWeight{}.UpdateParentScore(d.parentGraph, d.parentScore, key, 1)
+		CumulateWeight{}.UpdateScore(d.graph, d.score, key, 1)
+		CumulateWeight{}.UpdateTrunkScore(d.parentGraph, d.parentScore, key, 1)
 
 	} else if scoreAlg == "KATZ" {
 		d.score[key] = 1.0 / (float64(len(d.score)) + 1.0)
 		centrality := NewKatz(d.graph, d.revGraph, d.score, 0.5)
 		d.score = centrality.Compute()
-		CumulateWeight{}.UpdateParentScore(d.parentGraph, d.parentScore, key, 1)
+		CumulateWeight{}.UpdateTrunkScore(d.parentGraph, d.parentScore, key, 1)
 	}
 	d.freshScore = false
 }
 
-// GetPivotalHash returns the pivot hash of dag.
+// GetPivotalHash returns the pivot hash of dag from genesis.
 func (d *Dag) GetPivotalHash(depth int) types.Hash {
 	var ret types.Hash
-	d.buildPivotChain()
+	d.BuildPivotChain()
 	if depth == -1 || depth >= d.pivotChain.Length() {
 		set := d.topOrderStreaming[1]
 		if set.IsEmpty() {
@@ -191,113 +191,115 @@ func (d *Dag) GetPivotalHash(depth int) types.Hash {
 	return ret
 }
 
-func (d *Dag) buildPivotChain() {
-	d.pivotChain = d.PivotChain(d.GetGenesis())
+func (d *Dag) BuildPivotChain() {
+	d.graphLock.RLock()
+	defer d.graphLock.RUnlock()
+	d.pivotChain = d.getPivotChainFrom(d.GetGenesis())
 }
 
-func (d *Dag) PivotChain(start types.Hash) types.List {
-	d.graphLock.RLock()
-	defer d.graphLock.Unlock()
+// get the pivot chain after the giving node.
+func (d *Dag) getPivotChainFrom(start types.Hash) types.List {
+	/*d.graphLock.RLock()
+	defer d.graphLock.RUnlock()*/
 
 	list := types.List{}
 
-	if _, ok := d.graph[start]; start == types.NilHash || !ok {
+	if _, exist := d.graph[start]; start == types.NilHash || !exist {
 		return list
 	}
 
 	list.Append(start)
 
-	v, ok := d.parentRevGraph[start]
-	for ok && !v.IsEmpty() {
-		s := d.getMax(v)
-		if s == types.NilHash {
+	children, ok := d.parentRevGraph[start]
+	for ok && !children.IsEmpty() {
+		child := d.getMax(children)
+		if child == types.NilHash {
 			return list
 		}
 
-		d.pivotChain.Append(s)
+		list.Append(child)
 
-		start = s
-		v, ok = d.parentRevGraph[start]
+		start = child
+		children, ok = d.parentRevGraph[start]
 	}
 
 	return list
 }
 
+// todo: use config to get genesis directly; if genesis_forward is implemented, it should be as following.
 func (d *Dag) GetGenesis() types.Hash {
 	if d.ancestors != nil && !d.ancestors.Empty() {
 		return d.ancestors.Peek()
 	}
 
-	for key, v := range d.parentGraph {
-		if _, ok := d.parentGraph[v]; !ok {
+	// find one node whose trunk parent is not in parentGraph
+	for key, trunk := range d.parentGraph {
+		if _, ok := d.parentGraph[trunk]; !ok {
 			return key
 		}
 	}
 	return types.NilHash
 }
 
-func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
-	d.graphLock.RLock()
-
-	if _, ok := d.graph[start]; start == types.NilHash || !ok {
-		return types.NilHash
-	}
-	v, ok := d.parentRevGraph[start]
-	for ok && !v.IsEmpty() {
-		s := d.getMax(v)
-		if s == types.NilHash {
-			return start
-		}
-		start = s
-		v, ok = d.parentRevGraph[start]
-	}
-	return start
-
-}
-
 func (d *Dag) getMax(set types.Set) types.Hash {
 	tmpMaxScore := -1.0
-	s := types.NilHash
+	result := types.NilHash
 
-	for _, block := range set.List() {
-		if v, ok := d.parentScore[block]; ok {
-			if v > tmpMaxScore {
-				tmpMaxScore = v
-				s = block
-			} else if v == tmpMaxScore {
-				sStr := s.String()
-				blockStr := block.String()
+	for _, child := range set.List() {
+		if score, exist := d.parentScore[child]; exist {
+			if score > tmpMaxScore {
+				tmpMaxScore = score
+				result = child
+			} else if score == tmpMaxScore {
+				sStr := result.String()
+				blockStr := child.String()
 				if sStr < blockStr {
-					s = block
+					result = child
 				}
 			}
 		}
 	}
-	return s
+	return result
 }
 
-func (d *Dag) BuildGraph() {
+func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
+	d.graphLock.RLock()
+	defer d.graphLock.RUnlock()
+
+	if _, exist := d.graph[start]; start == types.NilHash || !exist {
+		return types.NilHash
+	}
+	children, exist := d.parentRevGraph[start]
+	for exist && !children.IsEmpty() {
+		child := d.getMax(children)
+		if child == types.NilHash {
+			return start
+		}
+		start = child
+		children, exist = d.parentRevGraph[start]
+	}
+	return start
 }
 
-func (d *Dag) GetChild(block types.Hash) types.Set {
-	if v, ok := d.revGraph[block]; ok {
-		return v
+func (d *Dag) GetChildren(cur types.Hash) types.Set {
+	if children, exist := d.revGraph[cur]; exist {
+		return children
 	}
 
 	return types.NewSet()
 }
 
 func (d *Dag) Contains(key types.Hash) bool {
-	_, ok := d.graph[key]
-	return ok
+	_, exist := d.graph[key]
+	return exist
 }
 
 func (d *Dag) GetScore(key types.Hash) float64 {
 	d.graphLock.RLock()
-	defer d.graphLock.Unlock()
+	defer d.graphLock.RUnlock()
 
-	score, ok := d.score[key]
-	if ok {
+	score, exist := d.score[key]
+	if exist {
 		return score
 	} else {
 		return 0.0

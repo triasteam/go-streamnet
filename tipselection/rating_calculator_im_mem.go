@@ -22,7 +22,7 @@ func (cu *CumulativeWeightMemCalculator) Calculate(entryPoint types.Hash) map[ty
 	var h types.Hash
 	for !queue.IsEmpty() {
 		h = queue.RemoveAtIndex(0)
-		for _, e := range cu.dag.GetChild(h).List() {
+		for _, e := range cu.dag.GetChildren(h).List() {
 			if cu.dag.Contains(e) && !visited.Has(e) {
 				queue.Append(e)
 				visited.Add(e)
