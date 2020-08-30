@@ -49,10 +49,7 @@ func (ts *TipSelectorStreamWork) GetTransactionsToApprove(depth int, reference t
 
 	var walkValidator WalkerValidatorImpl
 
-	var walker WalkerAlpha
-	walker.Init(ts.dag)
-
-	refTip := walker.walk(entryPoint, rating, walkValidator)
+	refTip := ts.walker.Walk(entryPoint, rating, &walkValidator)
 	tips.Append(refTip)
 
 	// TODO validate UTXO etc.
