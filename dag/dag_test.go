@@ -1,6 +1,7 @@
 package dag
 
 import (
+	"log"
 	"testing"
 
 	"github.com/triasteam/go-streamnet/config"
@@ -61,6 +62,38 @@ func TestAdd(t *testing.T) {
 	t.Log("score: ", d.score)
 	t.Log("parentScore: ", d.parentScore)
 
-	//pivot := d.getPivot(key)
+	// test GetGenesis
+	g := d.GetGenesis()
+	t.Log("Genesis: ", g)
 
+	// test GetPivotalHash
+	h := d.GetPivotalHash(0)
+	log.Print("Pivotal hash: ", h)
+	if key != h {
+		t.Fatal("Genesis is wrong!")
+	}
+
+	// test GetLastPivot
+	last := d.GetLastPivot(g)
+	if last != g {
+		t.Fatal("LastPivot is wrong!")
+	}
+	t.Log(last)
+
+	// test Contains
+	if !d.Contains(g) {
+		t.Fatal("Constains failed!")
+	}
+
+	// test GetScore
+	score := d.GetScore(key)
+	if score != 1 {
+		t.Fatal("Score is wrong!")
+	}
+
+	// test GetChildren
+	children := d.GetChildren(key)
+	if children.Len() != 0 {
+		t.Fatal("GetChildren is wrong!")
+	}
 }

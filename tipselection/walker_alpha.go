@@ -46,7 +46,7 @@ func (walker *WalkerAlpha) Walk(entryPoint types.Hash, ratings map[types.Hash]in
 func (walker *WalkerAlpha) selectApprover(tailHash types.Hash, ratings map[types.Hash]int, walkValidator WalkValidator) types.Hash {
 	approvers := types.NewSet()
 
-	approvers1 := walker.dag.GetChild(tailHash)
+	approvers1 := walker.dag.GetChildren(tailHash)
 	approvers.AddAll(approvers1)
 
 	return findNextValidTail(ratings, approvers, walkValidator)
