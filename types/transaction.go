@@ -47,7 +47,7 @@ func FromHash(hash Hash) *Transaction {
 // GetTrunkTransactionHash returns the trunk hash.
 func (tx *Transaction) GetTrunkTransactionHash() Hash {
 	if tx == nil {
-		return NewHash(nil)
+		return NilHash
 	}
 	return tx.trunk
 }
@@ -55,7 +55,7 @@ func (tx *Transaction) GetTrunkTransactionHash() Hash {
 // GetBranchTransactionHash returns the branch hash.
 func (tx *Transaction) GetBranchTransactionHash() Hash {
 	if tx == nil {
-		return NewHash(nil)
+		return NilHash
 	}
 	return tx.branch
 }

@@ -76,9 +76,9 @@ func (d *Dag) Close() {
 }
 
 // Add puts one tx hash into dag.
-func (d *Dag) Add(key types.Hash, value *types.Transaction) error {
-	trunk := value.GetTrunkTransactionHash()
-	branch := value.GetBranchTransactionHash()
+func (d *Dag) Add(key types.Hash, tx *types.Transaction) error {
+	trunk := tx.GetTrunkTransactionHash()
+	branch := tx.GetBranchTransactionHash()
 
 	d.graphLock.Lock()
 	defer d.graphLock.Unlock()
