@@ -1,7 +1,8 @@
 package server
 
 import (
-	"reflect"
+	"encoding/json"
+	"fmt"
 
 	pb "github.com/triasteam/go-streamnet/abci/proto"
 	streamnet_service "github.com/triasteam/go-streamnet/service"
@@ -36,14 +37,24 @@ func (s *abciServer) GetNoderank(ctx golang_context.Context, req *pb.RequestGetN
 	respTeectx := make([]*pb.NodeRankTeectx, len(teectx))
 
 	for i, scoreUnit := range teescore {
-		var dest = &pb.NodeRankTeescore{}
-		copyStruct(scoreUnit, dest)
-		respTeescore[i] = dest
+		var dest pb.NodeRankTeescore
+		str, err := json.Marshal(scoreUnit)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		json.Unmarshal(str, &dest)
+		respTeescore[i] = &dest
 	}
 
 	for i, ctxUnit := range teectx {
 		var dest = &pb.NodeRankTeectx{}
-		copyStruct(ctxUnit, dest)
+		str, err := json.Marshal(ctxUnit)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		json.Unmarshal(str, &dest)
 		respTeectx[i] = dest
 	}
 
@@ -54,20 +65,4 @@ func (s *abciServer) GetNoderank(ctx golang_context.Context, req *pb.RequestGetN
 		Teectx:   respTeectx,
 	}
 	return response, nil
-}
-
-func copyStruct(src, dst interface{}) { // struct copy
-	sval := reflect.ValueOf(src).Elem()
-	dval := reflect.ValueOf(dst).Elem()
-
-	for i := 0; i < sval.NumField(); i++ {
-		value := sval.Field(i)
-		name := sval.Type().Field(i).Name
-
-		dvalue := dval.FieldByName(name)
-		if dvalue.IsValid() == false {
-			continue
-		}
-		dvalue.Set(value)
-	}
 }

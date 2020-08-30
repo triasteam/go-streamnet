@@ -34,9 +34,7 @@ message NodeRankTeescore {
 message NodeRankTeectx {
     string attester = 1;
     string attestee = 2;
-    float  score = 3;
-    string time = 4;
-    int64  nonce = 5;
+    string  score = 3;
 }
 
 service StreamnetService{

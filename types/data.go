@@ -1,6 +1,9 @@
 package types
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // StoreData is the content of input.
 type StoreData struct {
@@ -11,7 +14,8 @@ type StoreData struct {
 
 // String transfers the StoreData to String.
 func (d StoreData) String() string {
-	return fmt.Sprintf("Attester: %s, Attestee: %s, Score: %s", d.Attester, d.Attestee, d.Score)
+	str, _ := json.Marshal(d)
+	return string(str)
 }
 
 // StoreReply is the struct to reply to user.

@@ -24,16 +24,16 @@ type GetRankRequest struct {
 }
 
 type Teectx struct {
-	Attester string  `json:"attester"`
-	Attestee string  `json:"attestee"`
-	Score    float64 `json:"score"`
-	Time     string  `json:"time,omitempty"`
-	Nonce    int64   `json:"nonce,omitempty"`
+	Attester string `json:"Attester"`
+	Attestee string `json:"Attestee"`
+	Score    string `json:"Score"`
+	// Time     string  `json:"time,omitempty"`
+	// Nonce    int64   `json:"nonce,omitempty"`
 }
 
 type Teescore struct {
-	Attestee string  `json:"attestee"`
-	Score    float64 `json:"score"`
+	Attestee string  `json:"Attestee"`
+	Score    float64 `json:"Score"`
 }
 
 // TeeSoreSlice ...
@@ -53,33 +53,42 @@ func GetRank(request *GetRankRequest, period int, numRank int) ([]Teescore, []Te
 
 	rArr0 := []Teectx{}
 
+	var teeUnit Teectx
+
 	for _, m2 := range msgArr {
-		msgT, err := url2.QueryUnescape(m2)
+		// msgT, err := url2.QueryUnescape(m2)
+		// if err != nil {
+		// 	fmt.Println("QueryUnescape error, m2 = ", m2)
+		// 	return nil, nil, err
+		// }
+		// var msg message
+		// err = json.Unmarshal([]byte(msgT), &msg)
+		// if err != nil {
+		// 	fmt.Println("unmarshal message error, msgT = ", msgT)
+		// 	return nil, nil, err
+		// }
+
+		// rArr := msg.TeeContent
+
+		// for _, r := range rArr {
+		json.Unmarshal([]byte(m2), &teeUnit)
+
+		float, err := strconv.ParseFloat(teeUnit.Score, 64)
 		if err != nil {
-			fmt.Println("QueryUnescape error, m2 = ", m2)
-			return nil, nil, err
-		}
-		var msg message
-		err = json.Unmarshal([]byte(msgT), &msg)
-		if err != nil {
-			fmt.Println("unmarshal message error, msgT = ", msgT)
-			return nil, nil, err
+			float = 0.0
 		}
 
-		rArr := msg.TeeContent
-
-		for _, r := range rArr {
-			if math.IsNaN(r.Score) || math.IsInf(r.Score, 0) {
-				fmt.Println("un invalid rank param. score : ", r.Score)
-			} else {
-				if r.Score == 0 {
-					fmt.Println("un invalid rank param. score is zero.")
-				}
-				graph.Link(r.Attester, r.Attestee, r.Score)
-				cm[r.Attestee] = Teectx{r.Attester, r.Attestee, r.Score, "", 0}
-				rArr0 = append(rArr0, r)
+		if math.IsNaN(float) || math.IsInf(float, 0) {
+			fmt.Println("un invalid rank param. score : ", teeUnit.Score)
+		} else {
+			if float == 0 {
+				fmt.Println("un invalid rank param. score is zero.")
 			}
+			graph.Link(teeUnit.Attester, teeUnit.Attestee, float)
+			cm[teeUnit.Attestee] = Teectx{teeUnit.Attester, teeUnit.Attestee, teeUnit.Score}
+			rArr0 = append(rArr0, teeUnit)
 		}
+		// }
 	}
 	var rst []Teescore
 	var teectxslice []Teectx
