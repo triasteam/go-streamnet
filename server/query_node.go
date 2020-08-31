@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,7 +21,7 @@ func getRank(data []string, peroid uint32, numRank uint32) *types.Message {
 	}
 
 	if nil != err {
-		fmt.Printf("Connect to grpc server failed: %s\n", err)
+		log.Printf("Connect to grpc server failed: %s\n", err)
 		return nil
 	}
 
@@ -40,7 +39,7 @@ func getRank(data []string, peroid uint32, numRank uint32) *types.Message {
 	message.Message = "Query node data successfully"
 
 	result, err := client.GetNoderank(context.Background(), req)
-	if err != nil {
+	if err == nil {
 		dt := types.DataTee{}
 		teeScores := result.GetTeescore()
 		newTeeScoreArray := make([]types.TeeScore, len(teeScores))
@@ -68,7 +67,7 @@ func getRank(data []string, peroid uint32, numRank uint32) *types.Message {
 	} else {
 		message.Code = 1
 		message.Message = "response is nil"
-		fmt.Println("response is nil")
+		log.Println("response is nil", err)
 	}
 	return &message
 }
@@ -81,7 +80,7 @@ func QueryNodesHandle(w http.ResponseWriter, r *http.Request) {
 	var params types.QueryNodeReq
 	err := decoder.Decode(&params)
 	if err != nil {
-		fmt.Printf("Get error: %v.", err)
+		log.Printf("Get error: %v.", err)
 		return
 	}
 	log.Printf("POST json: %s\n", params)
@@ -99,7 +98,6 @@ func QueryNodesHandle(w http.ResponseWriter, r *http.Request) {
 		tx := types.TransactionFromBytes(txBytes)
 		input = append(input, tx.DataHash.String())
 	}
-	log.Println(input)
 
 	response := getRank(input, params.Period, params.NumRank)
 
