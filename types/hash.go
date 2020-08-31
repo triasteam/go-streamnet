@@ -54,6 +54,19 @@ func NewHashHex(hexString string) Hash {
 	return h
 }
 
+func RandomHash() Hash {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	b := make([]byte, HashLen)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+
+	return Sha256(b)
+}
+
 func (h Hash) Bytes() []byte {
 	var b = make([]byte, HashLen, HashLen)
 	copy(b[:], h[:])
@@ -66,17 +79,4 @@ func (h Hash) String() string {
 	copy(b[:], h[:])
 
 	return hex.EncodeToString(b[:])
-}
-
-func RandomHash() Hash {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	b := make([]byte, HashLen)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-
-	return Sha256(b)
 }
