@@ -54,6 +54,13 @@ func NewHashHex(hexString string) Hash {
 	return h
 }
 
+func (h Hash) Bytes() []byte {
+	var b = make([]byte, HashLen, HashLen)
+	copy(b[:], h[:])
+
+	return b
+}
+
 func (h Hash) String() string {
 	var b = make([]byte, HashLen, HashLen)
 	copy(b[:], h[:])

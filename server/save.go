@@ -63,6 +63,7 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 		return nil, err
 	}
 	txHash := types.Sha256(txBytes)
+	hashBytes := txHash.Bytes()
 
 	// Save to dag
 	err = sn.Dag.Add(txHash, &tx)
@@ -72,7 +73,7 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	}
 
 	// Save to db
-	k, err := sn.Store.SaveValue(txBytes)
+	err = sn.Store.Save(hashBytes, txBytes)
 	if err != nil {
 		log.Printf("Save data to database failed: %v\n", err)
 	}
@@ -80,7 +81,7 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 
 	// todo: broadcast to neighbors.
 
-	return k, err
+	return hashBytes, err
 }
 
 // SaveHandle process the 'save' request.
