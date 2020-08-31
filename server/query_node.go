@@ -42,7 +42,7 @@ func getRank(data []string, peroid uint32, numRank uint32) *types.Message {
 	if err == nil {
 		dt := types.DataTee{}
 		teeScores := result.GetTeescore()
-		newTeeScoreArray := make([]types.TeeScore, len(teeScores))
+		newTeeScoreArray := make([]types.TeeScore, 0)
 		for _, ts := range teeScores {
 			newTs := types.TeeScore{}
 			newTs.Attestee = ts.GetAttestee()
@@ -51,7 +51,7 @@ func getRank(data []string, peroid uint32, numRank uint32) *types.Message {
 		}
 
 		teeCtxes := result.GetTeectx()
-		newTeeCtxArr := make([]types.TeeCtx, len(teeCtxes))
+		newTeeCtxArr := make([]types.TeeCtx, 0)
 		for _, tc := range teeCtxes {
 			newTc := types.TeeCtx{}
 			newTc.Attestee = tc.GetAttestee()
