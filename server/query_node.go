@@ -16,7 +16,7 @@ import (
 
 func getRank(data []string, peroid uint32, numRank uint32) *types.Message {
 	// create connection
-	conn, err := grpc.Dial(address+":"+rpcPort, grpc.WithInsecure())
+	conn, err := grpc.Dial(address+rpcPort, grpc.WithInsecure())
 	if nil != conn {
 		defer conn.Close()
 	}
@@ -89,10 +89,17 @@ func QueryNodesHandle(w http.ResponseWriter, r *http.Request) {
 	// get data from dag
 	value := sn.Dag.GetTotalOrder()
 
+	// get tx's dataHash from db
 	input := make([]string, 0)
-	for _, b := range value {
-		input = append(input, b.String())
+	for _, hash := range value {
+		txBytes, err := sn.Store.Get(hash.Bytes())
+		if err != nil {
+			log.Panicln("Get data from database failed!", err)
+		}
+		tx := types.TransactionFromBytes(txBytes)
+		input = append(input, tx.DataHash.String())
 	}
+	log.Println(input)
 
 	response := getRank(input, params.Period, params.NumRank)
 
