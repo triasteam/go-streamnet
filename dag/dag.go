@@ -174,7 +174,7 @@ func (d *Dag) updateScore(key types.Hash) {
 	d.freshScore = false
 }
 
-// GetPivotalHash returns the pivot hash of dag from genesis.
+// GetPivotalHash returns the pivot hash of dag from genesis. depth is 0, 1, 2...
 func (d *Dag) GetPivotalHash(depth int) types.Hash {
 	var ret types.Hash
 	d.BuildPivotChain()

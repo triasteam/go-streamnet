@@ -1,6 +1,7 @@
 package tipselection
 
 import (
+	"github.com/triasteam/go-streamnet/config"
 	"github.com/triasteam/go-streamnet/dag"
 	"github.com/triasteam/go-streamnet/types"
 )
@@ -17,12 +18,12 @@ func (tips *TipSelectorStreamWork) Init(dag *dag.Dag) {
 
 	// todo: using config to choose entrypoint selector.
 	ep := EntryPointKatz{}
-	ep.Init(dag)
+	ep.Init()
 	tips.ep = &ep
 
 	// todo: using config to choose rating calculator.
 	cal := CumulativeWeightMemCalculator{}
-	cal.Init(dag)
+	cal.Init()
 	tips.cal = &cal
 
 	// todo: using config to choose tail finder.
@@ -39,20 +40,26 @@ func (ts *TipSelectorStreamWork) GetTransactionsToApprove(depth int, reference t
 	tips := types.List{}
 
 	// Parental tip
-	parentTip := ts.dag.GetLastPivot(ts.dag.GetGenesis())
-	tips.Add(parentTip)
+	trunkTip := ts.dag.GetLastPivot(ts.dag.GetGenesis())
+	tips.Add(trunkTip)
 
 	// Reference tip
-	entryPoint := ts.ep.GetEntryPoint(depth)
+	entryPoint := ts.ep.GetEntryPoint(ts.dag, depth)
 
-	rating := ts.cal.Calculate(entryPoint)
+	rating := ts.cal.Calculate(ts.dag, entryPoint)
 
 	var walkValidator WalkerValidatorImpl
 
-	refTip := ts.walker.Walk(entryPoint, rating, &walkValidator)
-	tips.Append(refTip)
+	branchTip := ts.walker.Walk(entryPoint, rating, &walkValidator)
+	tips.Append(branchTip)
 
-	// TODO validate UTXO etc.
+	// set genesis if trunk and branch are nil.
+	if tips.Index(0) == types.NilHash || tips.Index(1) == types.NilHash {
+		// Using genesis.
+		tips = types.List{}
+		tips.Append(config.GenesisTrunk)
+		tips.Append(config.GenesisBranch)
+	}
 
 	return tips
 }

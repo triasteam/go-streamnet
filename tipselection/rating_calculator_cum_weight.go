@@ -9,7 +9,7 @@ type CumulativeWeightCalculator struct {
 	dag *dag.Dag
 }
 
-func (cu CumulativeWeightCalculator) calculate(entryPoint types.Hash) map[types.Hash]int {
+func (cu CumulativeWeightCalculator) calculate(dag *dag.Dag, entryPoint types.Hash) map[types.Hash]int {
 	r := make(map[types.Hash]int)
 	return r
 }

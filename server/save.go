@@ -7,9 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
-
-	"github.com/triasteam/go-streamnet/config"
 
 	"github.com/triasteam/go-streamnet/abci/proto"
 
@@ -45,32 +42,19 @@ func callApp(data string) string {
 
 func StoreMessage(message *types.StoreData) ([]byte, error) {
 	// Tipselection
-	/*txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
-	if txsToApprove.Index(0) == types.NilHash || txsToApprove.Index(1) == types.NilHash {
-		// Using genesis.
-		txsToApprove.RemoveAtIndex(0)
-		txsToApprove.RemoveAtIndex(0)
-		txsToApprove.Append(config.GenesisTrunk)
-		txsToApprove.Append(config.GenesisBranch)
-	}*/
-	txsToApprove := types.List{}
-	txsToApprove.Append(config.GenesisTrunk)
-	txsToApprove.Append(config.GenesisBranch)
-
-	// Transaction
-	tx := types.Transaction{}
-	tx.Init(txsToApprove)
+	txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
 
 	// grpc
 	grpcResult := callApp(message.String())
 	h := types.NewHashHex(grpcResult)
-	tx.DataHash = h
+
 	log.Printf("Grpc result: %s\n", h)
 
-	// todo: POW
+	// Transaction
+	tx := types.Transaction{}
+	tx.Init(txsToApprove, h)
 
-	// timestamp
-	tx.Timestamp = time.Now()
+	// todo: POW
 
 	// tx hash
 	txBytes, err := tx.Bytes()

@@ -1,9 +1,10 @@
 package tipselection
 
 import (
+	"github.com/triasteam/go-streamnet/dag"
 	"github.com/triasteam/go-streamnet/types"
 )
 
 type EntryPoint interface {
-	GetEntryPoint(depth int) types.Hash
+	GetEntryPoint(dag *dag.Dag, depth int) types.Hash
 }

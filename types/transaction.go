@@ -33,9 +33,14 @@ type Transaction struct {
 	//height int64
 }
 
-func (tx *Transaction) Init(parents List) {
+func (tx *Transaction) Init(parents List, value Hash) {
 	tx.trunk = parents.Index(0)
 	tx.branch = parents.Index(1)
+
+	// timestamp
+	tx.Timestamp = time.Now()
+
+	tx.DataHash = value
 }
 
 func FromHash(hash Hash) *Transaction {
