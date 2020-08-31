@@ -98,7 +98,7 @@ func selects(ratings map[types.Hash]int, approversSet types.Set) types.Hash {
 
 	var weights = list.New()
 	for e := normalizedWalkRatings.Front(); e != nil; e = e.Next() {
-		weights.PushBack(math.Exp(ALPHA * e.Value.(float64)))
+		weights.PushBack(math.Exp(ALPHA * float64(e.Value.(int))))
 	}
 
 	//select the next transaction
