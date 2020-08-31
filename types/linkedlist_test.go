@@ -104,3 +104,13 @@ func TestAppendAndIndex(t *testing.T) {
 		log.Fatal("Add and get not same!")
 	}
 }
+
+func TestRemove(t *testing.T) {
+	l := List{}
+	l.Append(NilHash)
+	l.Append(NilHash)
+	t.Log(l.Length())
+
+	l.Remove(NilHash)
+	t.Log(l.Length())
+}

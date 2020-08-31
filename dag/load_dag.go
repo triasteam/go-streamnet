@@ -12,5 +12,6 @@ func computeToplogicalOrder() {
 func (dag *Dag) ComputeScore() {
 }
 
+// todo: restart
 func (d *Dag) BuildGraph() {
 }

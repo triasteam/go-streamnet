@@ -6,22 +6,22 @@ import (
 )
 
 type EntryPointKatz struct {
-	dag *dag.Dag
 }
 
-func (kz *EntryPointKatz) Init(dag *dag.Dag) {
-	kz.dag = dag
+func (kz *EntryPointKatz) Init() {
+
 }
 
-func (kz *EntryPointKatz) GetEntryPoint(depth int) types.Hash {
+func (kz *EntryPointKatz) GetEntryPoint(dag *dag.Dag, depth int) types.Hash {
+	// todo:
 	streamingGraph := true
 
 	if streamingGraph {
-		return kz.dag.GetPivotalHash(depth)
+		return dag.GetPivotalHash(depth)
 	} else {
-		kz.dag.BuildGraph()
-		kz.dag.ComputeScore()
+		dag.BuildGraph()
+		dag.ComputeScore()
 
-		return kz.dag.GetPivotalHash(depth)
+		return dag.GetPivotalHash(depth)
 	}
 }

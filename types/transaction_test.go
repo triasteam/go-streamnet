@@ -24,7 +24,7 @@ func TestInit(t *testing.T) {
 	branch := Sha256([]byte("StreamNet_Branch"))
 	parents.Append(trunk)
 	parents.Append(branch)
-	tx.Init(parents)
+	tx.Init(parents, RandomHash())
 	if tx.trunk != trunk || tx.branch != branch {
 		log.Fatal("Init failed!")
 	}

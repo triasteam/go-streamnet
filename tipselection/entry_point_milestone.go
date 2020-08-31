@@ -1,6 +1,7 @@
 package tipselection
 
 import (
+	"github.com/triasteam/go-streamnet/dag"
 	dag2 "github.com/triasteam/go-streamnet/dag"
 	"github.com/triasteam/go-streamnet/types"
 )
@@ -10,6 +11,6 @@ type EntryPointMilestone struct {
 	dag *dag2.Dag
 }
 
-func (ms *EntryPointMilestone) GetEntryPoint(depth int) types.Hash {
+func (ms *EntryPointMilestone) GetEntryPoint(dag *dag.Dag, depth int) types.Hash {
 	return types.NilHash
 }
