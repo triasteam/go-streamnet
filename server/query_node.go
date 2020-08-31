@@ -89,7 +89,7 @@ func QueryNodesHandle(w http.ResponseWriter, r *http.Request) {
 	// get data from dag
 	value := sn.Dag.GetTotalOrder()
 
-	input := make([]string, len(value))
+	input := make([]string, 0)
 	for _, b := range value {
 		input = append(input, b.String())
 	}
