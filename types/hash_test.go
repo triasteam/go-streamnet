@@ -38,3 +38,9 @@ func TestNewHashHex(t *testing.T) {
 		log.Fatal("Hex decode failed!")
 	}
 }
+
+func TestHash_Bytes(t *testing.T) {
+	h1 := NewHashString("hello")
+	b := h1.Bytes()
+	t.Log(b)
+}
