@@ -45,7 +45,7 @@ func startWeb(stream *streamnet.StreamNet) {
 	mux.Handle("/", &gsnHandler{})
 	mux.HandleFunc("/save", SaveHandle)
 	mux.HandleFunc("/get", GetHandle)
-	mux.HandleFunc("/QueryNodes", QueryNodesHandle)
+	//mux.HandleFunc("/QueryNodes", QueryNodesHandle)
 
 	server = &http.Server{
 		Addr:    streamnet_conf.EnvConfig.Port,
