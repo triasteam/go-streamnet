@@ -8,17 +8,17 @@ import (
 
 // Transaction is a core struct.
 type Transaction struct {
-	address Hash
+	Address Hash `json:"address"`
 
-	DataHash Hash
+	DataHash Hash `json:"DataHash"`
 
-	trunk  Hash
-	branch Hash
+	Trunk  Hash `json:"trunk"`
+	Branch Hash `json:"branch"`
 
-	Timestamp time.Time
+	Timestamp time.Time `json:"timestamp"`
 
-	weightMagnitude int64
-	nonce           []byte
+	WeightMagnitude int64  `json:"weightMagnitude"`
+	Nonce           []byte `json:"nonce"`
 
 	//bytes   []byte
 	//value     int64
@@ -34,8 +34,8 @@ type Transaction struct {
 }
 
 func (tx *Transaction) Init(parents List, value Hash) {
-	tx.trunk = parents.Index(0)
-	tx.branch = parents.Index(1)
+	tx.Trunk = parents.Index(0)
+	tx.Branch = parents.Index(1)
 
 	// timestamp
 	tx.Timestamp = time.Now()
@@ -54,7 +54,7 @@ func (tx *Transaction) GetTrunkTransactionHash() Hash {
 	if tx == nil {
 		return NilHash
 	}
-	return tx.trunk
+	return tx.Trunk
 }
 
 // GetBranchTransactionHash returns the branch hash.
@@ -62,15 +62,15 @@ func (tx *Transaction) GetBranchTransactionHash() Hash {
 	if tx == nil {
 		return NilHash
 	}
-	return tx.branch
+	return tx.Branch
 }
 
-func (tx *Transaction) GetApprovers() Set {
+/*func (tx *Transaction) GetApprovers() Set {
 	s := NewSet()
-	/*s.Add(tx.trunk)
-	s.Add(tx.branch)*/
+	s.Add(tx.Trunk)
+	s.Add(tx.Branch)
 	return s
-}
+}*/
 
 func (tx *Transaction) Bytes() ([]byte, error) {
 	b, err := json.Marshal(tx)
@@ -88,4 +88,14 @@ func (tx *Transaction) String() (string, error) {
 	} else {
 		return string(b), nil
 	}
+}
+
+func TransactionFromBytes(b []byte) *Transaction {
+	tx := Transaction{}
+	err := json.Unmarshal(b, &tx)
+	if err != nil {
+		log.Print("UnJson failed!")
+		return nil
+	}
+	return &tx
 }
