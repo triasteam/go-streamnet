@@ -1,10 +1,5 @@
-FROM xhumiq/gorocksdb
+FROM gorocksdb:1.13
 WORKDIR $GOPATH/src/github.com/triasteam/go-streamnet
 COPY ./ $GOPATH/src/github.com/triasteam/go-streamnet
-WORKDIR $GOPATH/src/github.com/triasteam/go-streamnet/build
-COPY ./config.yml  config.yml
-WORKDIR $GOPATH/src/github.com/triasteam/go-streamnet
-RUN go get gopkg.in/yaml.v2 \
-    && go build -o build/gsn
-WORKDIR $GOPATH/src/github.com/triasteam/go-streamnet/build
-ENTRYPOINT ["./gsn"]
+ENV HOST_IP false
+ENTRYPOINT ["sh","/go/src/github.com/triasteam/go-streamnet/entrypoint.sh"]
