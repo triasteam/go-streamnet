@@ -38,7 +38,7 @@ func TestAdd(t *testing.T) {
 	l.Append(trunk)
 	l.Append(branch)
 	tx := types.Transaction{}
-	tx.Init(l)
+	tx.Init(l, types.NewHash([]byte("data")))
 
 	bytes, _ := tx.Bytes()
 	key := types.Sha256(bytes)
