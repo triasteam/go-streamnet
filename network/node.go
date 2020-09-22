@@ -6,26 +6,30 @@ import (
 	"crypto/rand"
 	"flag"
 	"fmt"
+	"io"
+	"log"
 	"os"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/protocol"
-
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/peerstore"
 	"github.com/multiformats/go-multiaddr"
 )
 
 // Node hold send chan and store func
 type Node struct {
-	sendChan    chan []byte
-	receiveChan chan []byte
-	// storeFunc func(msg string) bool
+	// sendChan contains sendData used for broadcast message
+	SendChan chan []byte
+	// StoreFunc can be invoked when receiving broadcast message from neigbors
+	Receive func(message string) error
 }
 
 // Broadcast message to other node
-func (node *Node) Broadcast(msg string) bool {
-	node.sendChan <- []byte(msg)
+func (node *Node) Broadcast(data string) bool {
+	node.SendChan <- []byte(data)
+	// close(node.SendChan)
 	return true
 }
 
@@ -41,9 +45,6 @@ func (node *Node) handleStream(stream network.Stream) {
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 
-// read data means storing data to local
-// while received msg from other node, store it into local storage. So this method will invoke deamon
-// store method.
 func (node *Node) readData(rw *bufio.ReadWriter) {
 	for {
 		str, err := rw.ReadString('\n')
@@ -59,19 +60,16 @@ func (node *Node) readData(rw *bufio.ReadWriter) {
 			// Green console colour: 	\x1b[32m
 			// Reset console colour: 	\x1b[0m
 			fmt.Printf("\x1b[32m%s\x1b[0m> ", str)
-			// do store
-			node.receiveChan <- []byte(str)
+			node.Receive(str)
 		}
+
 	}
 }
 
 func (node *Node) writeData(rw *bufio.ReadWriter) {
 	for {
 		fmt.Print("> ")
-		sendData, ok := <-node.sendChan
-		if ok {
-			break
-		}
+		sendData := <-node.SendChan
 
 		_, err := rw.WriteString(fmt.Sprintf("%s\n", sendData))
 		if err != nil {
@@ -87,70 +85,106 @@ func (node *Node) writeData(rw *bufio.ReadWriter) {
 }
 
 // NewNetwork create a new p2p network server
-func NewNetwork(storeFunc func(msg string) bool, sendChan chan []byte) (node *Node) {
+func NewNetwork(_receive func(data string) error, _sendChan chan []byte) (node *Node) {
+	// config
 	help := flag.Bool("help", false, "Display Help")
 	cfg := parseFlags()
 
 	if *help {
-		fmt.Printf("Simple example for peer discovery using mDNS. mDNS is great when you have multiple peers in local LAN.")
-		fmt.Printf("Usage: \n   Run './chat-with-mdns'\nor Run './chat-with-mdns -host [host] -port [port] -rendezvous [string] -pid [proto ID]'\n")
-
+		fmt.Printf("Start a gossip peer.")
+		fmt.Printf("Usage: \n Run ./main -sp [port] -d [destination multiaddr string]")
 		os.Exit(0)
 	}
 
-	fmt.Printf("[*] Listening on: %s with port: %d\n", cfg.listenHost, cfg.listenPort)
+	var r io.Reader
 
-	ctx := context.Background()
-	r := rand.Reader
+	r = rand.Reader
 
-	// Creates a new RSA key pair for this host.
-	prvKey, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, r)
+	// Creates a new RSA key pair for this host
+	privKey, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, r)
 	if err != nil {
 		panic(err)
 	}
-
 	// 0.0.0.0 will listen on any interface device.
-	sourceMultiAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/%s/tcp/%d", cfg.listenHost, cfg.listenPort))
+	sourceMultiAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", cfg.sp))
 
 	// libp2p.New constructs a new libp2p Host.
 	// Other options can be added here.
 	host, err := libp2p.New(
-		ctx,
+		context.Background(),
 		libp2p.ListenAddrs(sourceMultiAddr),
-		libp2p.Identity(prvKey),
+		libp2p.Identity(privKey),
 	)
-
 	if err != nil {
 		panic(err)
 	}
 
 	node = &Node{}
-	// Set a function as stream handler.
-	// This function is called when a peer initiates a connection and starts a stream with this peer.
-	host.SetStreamHandler(protocol.ID(cfg.ProtocolID), node.handleStream)
+	if cfg.d == "" {
+		// Set a function as stream handler.
+		// This function is called when a peer connects, and starts a stream with this protocol.
+		// Only applies on the receiving side.
+		host.SetStreamHandler("/chat/1.0.0", node.handleStream)
 
-	fmt.Printf("\n[*] Your Multiaddress Is: /ip4/%s/tcp/%v/p2p/%s\n", cfg.listenHost, cfg.listenPort, host.ID().Pretty())
+		// Let's get the actual TCP port from our listen multiaddr, in case we're using 0 (default; random available port).
+		var port string
+		for _, la := range host.Network().ListenAddresses() {
+			if p, err := la.ValueForProtocol(multiaddr.P_TCP); err == nil {
+				port = p
+				break
+			}
+		}
 
-	peerChan := initMDNS(ctx, host, cfg.RendezvousString)
+		if port == "" {
+			panic("was not able to find actual local port")
+		}
 
-	peer := <-peerChan // will block untill we discover a peer
-	fmt.Println("Found peer:", peer, ", connecting")
+		fmt.Printf("Run './main -d /ip4/127.0.0.1/tcp/%v/p2p/%s' on another console.\n", port, host.ID().Pretty())
+		fmt.Println("You can replace 127.0.0.1 with public IP as well.")
+		fmt.Printf("\nWaiting for incoming connection\n\n")
 
-	if err := host.Connect(ctx, peer); err != nil {
-		fmt.Println("Connection failed:", err)
-	}
-
-	// open a stream, this stream will be handled by handleStream other end
-	stream, err := host.NewStream(ctx, peer.ID, protocol.ID(cfg.ProtocolID))
-
-	if err != nil {
-		fmt.Println("Stream open failed", err)
+		// Hang forever
+		<-make(chan struct{})
 	} else {
-		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+		fmt.Println("This node's multiaddresses:")
+		for _, la := range host.Addrs() {
+			fmt.Printf(" - %v\n", la)
+		}
+		fmt.Println()
+
+		// Turn the destination into a multiaddr.
+		maddr, err := multiaddr.NewMultiaddr(cfg.d)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		// Extract the peer ID from the multiaddr.
+		info, err := peer.AddrInfoFromP2pAddr(maddr)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		// Add the destination's peer multiaddress in the peerstore.
+		// This will be used during connection and stream creation by libp2p.
+		host.Peerstore().AddAddrs(info.ID, info.Addrs, peerstore.PermanentAddrTTL)
+
+		// Start a stream with the destination.
+		// Multiaddress of the destination peer is fetched from the peerstore using 'peerId'.
+		s, err := host.NewStream(context.Background(), info.ID, "/chat/1.0.0")
+		if err != nil {
+			panic(err)
+		}
+
+		// Create a buffered stream so that read and writes are non blocking.
+		rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
+
+		// Create a thread to read and write data.
 		go node.writeData(rw)
 		go node.readData(rw)
-		fmt.Println("Connected to:", peer)
+
+		// Hang forever.
+		select {}
 	}
 
-	select {} //wait here
+	return node
 }

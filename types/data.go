@@ -73,3 +73,11 @@ type Message struct {
 	Message   string
 	Data      DataTee
 }
+
+// SendData contains appove data and origin data
+// used to broadcast and receive to neigbors
+type SendData struct {
+	Parent    string
+	Reference string
+	Data      interface{}
+}
