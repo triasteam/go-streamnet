@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/triasteam/go-streamnet/network"
 	"github.com/triasteam/go-streamnet/streamnet"
 
 	"github.com/triasteam/go-streamnet/dag"
@@ -17,6 +18,7 @@ import (
 
 	//"io"
 	//cmd "github.com/triasteam/go-streamnet/commands"
+
 	"github.com/triasteam/go-streamnet/server"
 	"github.com/triasteam/go-streamnet/store"
 )
@@ -57,5 +59,9 @@ func initStreamWork() {
 	GlobalData.Tips = &tips
 
 	// Set genesis trunk and branch
+
+	// init libp2p
+	node := network.NewNetwork(server.OnReceived, nil)
+	GlobalData.Network = node
 
 }

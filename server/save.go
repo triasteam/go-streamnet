@@ -10,9 +10,13 @@ import (
 
 	"github.com/triasteam/go-streamnet/abci/proto"
 
+	"github.com/triasteam/go-streamnet/streamnet"
 	"github.com/triasteam/go-streamnet/types"
 	"google.golang.org/grpc"
 )
+
+// GlobalData used for translating send data
+var GlobalData streamnet.StreamNet
 
 func callApp(data string) string {
 	// create connection
@@ -40,6 +44,7 @@ func callApp(data string) string {
 	return result.Data
 }
 
+// StoreMessage ...
 func StoreMessage(message *types.StoreData) ([]byte, error) {
 	// Tipselection
 	txsToApprove := sn.Tips.GetTransactionsToApprove(15, types.NilHash)
@@ -79,8 +84,6 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	}
 	log.Printf("Store to database successed!\n")
 
-	// todo: broadcast to neighbors.
-
 	return hashBytes, err
 }
 
@@ -96,6 +99,9 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
+
+	// broadcast to neigbors
+	// broadcast(&params)
 
 	// save data to dag & db
 	key, err := StoreMessage(&params)
@@ -115,4 +121,59 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	reply, _ := json.Marshal(store_reply)
 	w.Write(reply)
+}
+
+// OnReceived means after received message from neigbors, first will poll parent and reference,
+// then getting origin message and store it to local.
+// "h" means local storage key, it's different from any other neigbors.
+func OnReceived(message string) error {
+	var data types.SendData
+	err := json.Unmarshal([]byte(message), data)
+	if err != nil {
+		panic(err)
+	}
+	txsToApprove := types.List{}
+	txsToApprove.Append(types.NewHashString(data.Parent))
+	txsToApprove.Append(types.NewHashString(data.Reference))
+
+	grpcResult := callApp(fmt.Sprintf("%v", data.Data))
+	h := types.NewHashHex(grpcResult)
+	log.Printf("Grpc result: %s\n", h)
+
+	// Transaction
+	tx := types.Transaction{}
+	tx.Init(txsToApprove, h)
+
+	// todo: POW
+
+	// tx hash
+	txBytes, err := tx.Bytes()
+	if err != nil {
+		log.Printf("Transaction to bytes failed: %s\n", err)
+		return err
+	}
+	txHash := types.Sha256(txBytes)
+	hashBytes := txHash.Bytes()
+
+	// Save to dag
+	err = sn.Dag.Add(txHash, &tx)
+	if err != nil {
+		log.Printf("Dag add tx failed: %s\n", err)
+		return err
+	}
+
+	// Save to db
+	err = sn.Store.Save(hashBytes, txBytes)
+	if err != nil {
+		log.Printf("Save data to database failed: %v\n", err)
+	}
+	log.Printf("Store to database successed!\n")
+
+	return nil
+}
+
+func broadcast(message string) error {
+	// broadcast to other nodes
+	GlobalData.Network.Broadcast(message)
+	return nil
 }
