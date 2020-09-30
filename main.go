@@ -61,7 +61,8 @@ func initStreamWork() {
 	// Set genesis trunk and branch
 
 	// init libp2p
-	node := network.NewNetwork(server.OnReceived, nil)
-	GlobalData.Network = node
+	node := network.Node{}
+	node.Init(server.OnReceived)
+	GlobalData.Network = &node
 
 }

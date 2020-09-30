@@ -26,6 +26,13 @@ type Node struct {
 	Receive func(message string) error
 }
 
+// Init SendChan and on receive method
+func (node *Node) Init(_receive func(data string) error) {
+	node.SendChan = make(chan []byte, 1)
+	node.Receive = _receive
+	node.NewNetwork()
+}
+
 // Broadcast message to other node
 func (node *Node) Broadcast(data string) bool {
 	node.SendChan <- []byte(data)
@@ -68,9 +75,9 @@ func (node *Node) readData(rw *bufio.ReadWriter) {
 
 func (node *Node) writeData(rw *bufio.ReadWriter) {
 	for {
-		fmt.Print("> ")
+		fmt.Print("waiting input... ")
 		sendData := <-node.SendChan
-
+		fmt.Print("send data is ", sendData)
 		_, err := rw.WriteString(fmt.Sprintf("%s\n", sendData))
 		if err != nil {
 			fmt.Println("Error writing to buffer")
@@ -85,7 +92,7 @@ func (node *Node) writeData(rw *bufio.ReadWriter) {
 }
 
 // NewNetwork create a new p2p network server
-func NewNetwork(_receive func(data string) error, _sendChan chan []byte) (node *Node) {
+func (node *Node) NewNetwork() {
 	// config
 	help := flag.Bool("help", false, "Display Help")
 	cfg := parseFlags()
@@ -105,6 +112,9 @@ func NewNetwork(_receive func(data string) error, _sendChan chan []byte) (node *
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("========= sp : ", cfg.sp)
+
 	// 0.0.0.0 will listen on any interface device.
 	sourceMultiAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", cfg.sp))
 
@@ -119,7 +129,6 @@ func NewNetwork(_receive func(data string) error, _sendChan chan []byte) (node *
 		panic(err)
 	}
 
-	node = &Node{}
 	if cfg.d == "" {
 		// Set a function as stream handler.
 		// This function is called when a peer connects, and starts a stream with this protocol.
@@ -144,7 +153,7 @@ func NewNetwork(_receive func(data string) error, _sendChan chan []byte) (node *
 		fmt.Printf("\nWaiting for incoming connection\n\n")
 
 		// Hang forever
-		<-make(chan struct{})
+		// <-make(chan struct{})
 	} else {
 		fmt.Println("This node's multiaddresses:")
 		for _, la := range host.Addrs() {
@@ -183,8 +192,6 @@ func NewNetwork(_receive func(data string) error, _sendChan chan []byte) (node *
 		go node.readData(rw)
 
 		// Hang forever.
-		select {}
+		// select {}
 	}
-
-	return node
 }
