@@ -84,6 +84,16 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	}
 	log.Printf("Store to database successed!\n")
 
+	// broadcast to neigbors
+	sendData := &types.SendData{}
+	sendData.Data = message
+	sendData.Parent = txsToApprove.Index(0).String()
+	sendData.Reference = txsToApprove.Index(1).String()
+	msg, err := json.Marshal(sendData)
+	if err != nil {
+		broadcast(string(msg))
+	}
+
 	return hashBytes, err
 }
 
@@ -99,9 +109,6 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
-
-	// broadcast to neigbors
-	broadcast("tongxinceshi")
 
 	// save data to dag & db
 	key, err := StoreMessage(&params)
