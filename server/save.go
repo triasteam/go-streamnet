@@ -101,7 +101,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	log.Printf("POST json: Attester=%s, Attestee=%s\n", params.Attester, params.Attestee)
 
 	// broadcast to neigbors
-	// broadcast(&params)
+	broadcast("tongxinceshi")
 
 	// save data to dag & db
 	key, err := StoreMessage(&params)
@@ -174,6 +174,6 @@ func OnReceived(message string) error {
 
 func broadcast(message string) error {
 	// broadcast to other nodes
-	GlobalData.Network.Broadcast(message)
+	sn.Network.Broadcast(message)
 	return nil
 }
