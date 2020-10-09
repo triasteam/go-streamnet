@@ -79,5 +79,5 @@ type Message struct {
 type SendData struct {
 	Parent    string
 	Reference string
-	Data      interface{}
+	Data      string
 }
