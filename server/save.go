@@ -86,10 +86,15 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 
 	// broadcast to neigbors
 	sendData := &types.SendData{}
-	sendData.Data = message
+	// convert to json string
+	msg, err := json.Marshal(message)
+	if err != nil {
+		panic(err)
+	}
+	sendData.Data = string(msg)
 	sendData.Parent = txsToApprove.Index(0).String()
 	sendData.Reference = txsToApprove.Index(1).String()
-	msg, err := json.Marshal(sendData)
+	msg, err = json.Marshal(sendData)
 	if err == nil {
 		broadcast(string(msg))
 	}
