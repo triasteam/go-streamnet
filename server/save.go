@@ -90,7 +90,7 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	sendData.Parent = txsToApprove.Index(0).String()
 	sendData.Reference = txsToApprove.Index(1).String()
 	msg, err := json.Marshal(sendData)
-	if err != nil {
+	if err == nil {
 		broadcast(string(msg))
 	}
 
@@ -118,16 +118,18 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// hex encode
-	key_hex := make([]byte, hex.EncodedLen(len(key)))
-	hex.Encode(key_hex, key)
+	keyHex := make([]byte, hex.EncodedLen(len(key)))
+	hex.Encode(keyHex, key)
 
 	// return
-	store_reply := types.StoreReply{
+	storeReply := types.StoreReply{
 		Code: 0,
-		Hash: fmt.Sprintf("0x%s", key_hex),
+		Hash: fmt.Sprintf("0x%s", string(keyHex)),
 	}
-	reply, _ := json.Marshal(store_reply)
-	w.Write(reply)
+	reply, err := json.Marshal(storeReply)
+	if err == nil {
+		w.Write(reply)
+	}
 }
 
 // OnReceived means after received message from neigbors, first will poll parent and reference,
@@ -135,7 +137,7 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 // "h" means local storage key, it's different from any other neigbors.
 func OnReceived(message string) error {
 	var data types.SendData
-	err := json.Unmarshal([]byte(message), data)
+	err := json.Unmarshal([]byte(message), &data)
 	if err != nil {
 		panic(err)
 	}
