@@ -15,6 +15,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
+	swarm "github.com/libp2p/go-libp2p-swarm"
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -113,7 +114,7 @@ func (node *Node) NewNetwork() {
 		panic(err)
 	}
 
-	fmt.Println("========= sp : ", cfg.sp)
+	fmt.Printf("========= sp : %v, relay: %s, d: %s \n", cfg.sp, cfg.relayAddress, cfg.d)
 
 	// 0.0.0.0 will listen on any interface device.
 	sourceMultiAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", cfg.sp))
@@ -124,16 +125,28 @@ func (node *Node) NewNetwork() {
 		context.Background(),
 		libp2p.ListenAddrs(sourceMultiAddr),
 		libp2p.Identity(privKey),
+		libp2p.EnableRelay(),
 	)
 	if err != nil {
 		panic(err)
 	}
 
+	// relay info,
+	relayInfo := &peer.AddrInfo{}
+	if cfg.relayAddress != "" {
+		fmt.Printf("relay address is : %s \n", cfg.relayAddress)
+		relayAddress, err := multiaddr.NewMultiaddr(cfg.relayAddress)
+		if err != nil {
+			panic(err)
+		}
+
+		relayInfo, err = peer.AddrInfoFromP2pAddr(relayAddress)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	if cfg.d == "" {
-		// Set a function as stream handler.
-		// This function is called when a peer connects, and starts a stream with this protocol.
-		// Only applies on the receiving side.
-		host.SetStreamHandler("/chat/1.0.0", node.handleStream)
 
 		// Let's get the actual TCP port from our listen multiaddr, in case we're using 0 (default; random available port).
 		var port string
@@ -148,10 +161,21 @@ func (node *Node) NewNetwork() {
 			panic("was not able to find actual local port")
 		}
 
+		// If relay exists, then connect it
+		if cfg.relayAddress != "" {
+			if err = host.Connect(context.Background(), *relayInfo); err != nil {
+				panic(err)
+			}
+		}
+
 		fmt.Printf("Run './main -d /ip4/127.0.0.1/tcp/%v/p2p/%s' on another console.\n", port, host.ID().Pretty())
 		fmt.Println("You can replace 127.0.0.1 with public IP as well.")
 		fmt.Printf("\nWaiting for incoming connection\n\n")
 
+		// Set a function as stream handler.
+		// This function is called when a peer connects, and starts a stream with this protocol.
+		// Only applies on the receiving side.
+		host.SetStreamHandler("/chat/1.0.0", node.handleStream)
 		// Hang forever
 		// <-make(chan struct{})
 	} else {
@@ -181,7 +205,35 @@ func (node *Node) NewNetwork() {
 		// Multiaddress of the destination peer is fetched from the peerstore using 'peerId'.
 		s, err := host.NewStream(context.Background(), info.ID, "/chat/1.0.0")
 		if err != nil {
-			panic(err)
+			// If panic connect err, then try to use relay
+			// First, host must connect to relay successfully
+			if err = host.Connect(context.Background(), *relayInfo); err != nil {
+				panic(err)
+			}
+
+			// Second, build a multiaddress use relay
+			destAddrWithRelay, err := multiaddr.NewMultiaddr("/p2p/" + relayInfo.ID.Pretty() + "/p2p-circuit/p2p/" + info.ID.Pretty())
+			if err != nil {
+				panic(err)
+			}
+
+			host.Network().(*swarm.Swarm).Backoff().Clear(relayInfo.ID)
+
+			// Third, Connect to dest addr with relay
+			destAddrInfoWithRelay := &peer.AddrInfo{
+				ID:    info.ID,
+				Addrs: []multiaddr.Multiaddr{destAddrWithRelay},
+			}
+
+			if err = host.Connect(context.Background(), *destAddrInfoWithRelay); err != nil {
+				panic(err)
+			}
+
+			// Forth, try to connect again
+			s, err = host.NewStream(context.Background(), info.ID, "/chat/1.0.0")
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		// Create a buffered stream so that read and writes are non blocking.
