@@ -9,6 +9,7 @@ build:
 
 install:
 	go install ./main.go
+	go install ./scripts/relay/relay.go
 
 
 test:
