@@ -48,7 +48,7 @@ func (node *Node) Broadcast(data string) bool {
 }
 
 func (node *Node) handleStream(stream network.Stream) {
-	fmt.Println("Got a new stream!")
+	fmt.Printf("Got a new stream! total connetion is %d \n", node.ConnectCount)
 	node.ConnectCount++
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -64,7 +64,8 @@ func (node *Node) readData(rw *bufio.ReadWriter) {
 		str, err := rw.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading from buffer")
-			panic(err)
+			node.ConnectCount--
+			return
 		}
 
 		if str == "" {
