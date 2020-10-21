@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // StoreData is the content of input.
@@ -77,7 +78,8 @@ type Message struct {
 // SendData contains appove data and origin data
 // used to broadcast and receive to neigbors
 type SendData struct {
-	Parent    string
-	Reference string
-	Data      string
+	Parent    string    `json:"trunk"`
+	Reference string    `json:"brank"`
+	Data      string    `json:"data"`
+	Timestamp time.Time `json:"timestamp"`
 }

@@ -53,7 +53,7 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	grpcResult := callApp(message.String())
 	h := types.NewHashHex(grpcResult)
 
-	log.Printf("Grpc result: %s\n", h)
+	log.Printf("\n Grpc result: %s\n", h)
 
 	// Transaction
 	tx := types.Transaction{}
@@ -94,6 +94,7 @@ func StoreMessage(message *types.StoreData) ([]byte, error) {
 	sendData.Data = string(msg)
 	sendData.Parent = txsToApprove.Index(0).String()
 	sendData.Reference = txsToApprove.Index(1).String()
+	sendData.Timestamp = tx.Timestamp
 	msg, err = json.Marshal(sendData)
 	if err == nil {
 		broadcast(string(msg))
@@ -147,16 +148,20 @@ func OnReceived(message string) error {
 		panic(err)
 	}
 	txsToApprove := types.List{}
-	txsToApprove.Append(types.NewHashString(data.Parent))
-	txsToApprove.Append(types.NewHashString(data.Reference))
+	txsToApprove.Append(types.NewHashHex(data.Parent))
+	txsToApprove.Append(types.NewHashHex(data.Reference))
 
 	grpcResult := callApp(fmt.Sprintf("%v", data.Data))
 	h := types.NewHashHex(grpcResult)
-	log.Printf("Grpc result: %s\n", h)
+	log.Printf("\n Grpc result: %s\n", h)
 
 	// Transaction
 	tx := types.Transaction{}
-	tx.Init(txsToApprove, h)
+	tx.Trunk = txsToApprove.Index(0)
+	tx.Branch = txsToApprove.Index(1)
+	// timestamp
+	tx.Timestamp = data.Timestamp
+	tx.DataHash = h
 
 	// todo: POW
 
@@ -166,6 +171,7 @@ func OnReceived(message string) error {
 		log.Printf("Transaction to bytes failed: %s\n", err)
 		return err
 	}
+
 	txHash := types.Sha256(txBytes)
 	hashBytes := txHash.Bytes()
 
