@@ -24,7 +24,8 @@ type Node struct {
 	// sendChan contains sendData used for broadcast message
 	SendChan chan []byte
 	// StoreFunc can be invoked when receiving broadcast message from neigbors
-	Receive func(message string) error
+	Receive      func(message string) error
+	ConnectCount int
 }
 
 // Init SendChan and on receive method
@@ -36,6 +37,11 @@ func (node *Node) Init(_receive func(data string) error) {
 
 // Broadcast message to other node
 func (node *Node) Broadcast(data string) bool {
+	// if has no neigbor no send
+	if node.ConnectCount < 1 {
+		return false
+	}
+
 	node.SendChan <- []byte(data)
 	// close(node.SendChan)
 	return true
@@ -43,7 +49,7 @@ func (node *Node) Broadcast(data string) bool {
 
 func (node *Node) handleStream(stream network.Stream) {
 	fmt.Println("Got a new stream!")
-
+	node.ConnectCount++
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
@@ -180,6 +186,8 @@ func (node *Node) NewNetwork() {
 		// <-make(chan struct{})
 	} else {
 		fmt.Println("This node's multiaddresses:")
+		node.ConnectCount++
+
 		for _, la := range host.Addrs() {
 			fmt.Printf(" - %v\n", la)
 		}
