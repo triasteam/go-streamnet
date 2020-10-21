@@ -78,7 +78,7 @@ func (node *Node) writeData(rw *bufio.ReadWriter) {
 	for {
 		fmt.Print("waiting input... ")
 		sendData := <-node.SendChan
-		fmt.Print("send data is ", sendData)
+		fmt.Print("send data is ", string(sendData))
 		_, err := rw.WriteString(fmt.Sprintf("%s\n", sendData))
 		if err != nil {
 			fmt.Println("Error writing to buffer")

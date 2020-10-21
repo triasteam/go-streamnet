@@ -175,6 +175,11 @@ func OnReceived(message string) error {
 	txHash := types.Sha256(txBytes)
 	hashBytes := txHash.Bytes()
 
+	if sn.Dag.Contains(txHash) {
+		fmt.Printf("tx [%s] already exist.", txHash.String())
+		return nil
+	}
+
 	// Save to dag
 	err = sn.Dag.Add(txHash, &tx)
 	if err != nil {
@@ -188,6 +193,8 @@ func OnReceived(message string) error {
 		log.Printf("Save data to database failed: %v\n", err)
 	}
 	log.Printf("Store to database successed!\n")
+
+	broadcast(message)
 
 	return nil
 }
