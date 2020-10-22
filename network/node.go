@@ -12,6 +12,7 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
@@ -24,32 +25,46 @@ type Node struct {
 	// sendChan contains sendData used for broadcast message
 	SendChan chan []byte
 	// StoreFunc can be invoked when receiving broadcast message from neigbors
-	Receive      func(message string) error
-	ConnectCount int
+	Receive func(message string) error
+	h       host.Host
+	streams []network.Stream
 }
 
 // Init SendChan and on receive method
 func (node *Node) Init(_receive func(data string) error) {
 	node.SendChan = make(chan []byte, 1)
 	node.Receive = _receive
+	node.streams = make([]network.Stream, 0)
 	node.NewNetwork()
 }
 
 // Broadcast message to other node
 func (node *Node) Broadcast(data string) bool {
 	// if has no neigbor no send
-	if node.ConnectCount < 1 {
+	if len(node.h.Network().Peers()) < 1 {
 		return false
 	}
 
-	node.SendChan <- []byte(data)
+	for _, stream := range node.streams {
+		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+		_, err := rw.WriteString(fmt.Sprintf("%s\n", data))
+		if err != nil {
+			fmt.Println("Error writing to buffer")
+			panic(err)
+		}
+		err = rw.Flush()
+		if err != nil {
+			fmt.Println("Error flushing buffer")
+			panic(err)
+		}
+	}
+	// node.SendChan <- []byte(data)
 	// close(node.SendChan)
 	return true
 }
 
 func (node *Node) handleStream(stream network.Stream) {
-	fmt.Printf("Got a new stream! total connetion is %d \n", node.ConnectCount)
-	node.ConnectCount++
+	node.streams = append(node.streams, stream)
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
@@ -64,7 +79,6 @@ func (node *Node) readData(rw *bufio.ReadWriter) {
 		str, err := rw.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading from buffer")
-			node.ConnectCount--
 			return
 		}
 
@@ -134,6 +148,8 @@ func (node *Node) NewNetwork() {
 		libp2p.Identity(privKey),
 		libp2p.EnableRelay(),
 	)
+	node.h = host
+
 	if err != nil {
 		panic(err)
 	}
@@ -187,8 +203,6 @@ func (node *Node) NewNetwork() {
 		// <-make(chan struct{})
 	} else {
 		fmt.Println("This node's multiaddresses:")
-		node.ConnectCount++
-
 		for _, la := range host.Addrs() {
 			fmt.Printf(" - %v\n", la)
 		}
