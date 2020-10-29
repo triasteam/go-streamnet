@@ -29,7 +29,7 @@ StreamNet implemented in Golang.
 * Golang version >= v1.14.2, [installed](https://golang.org/doc/install) 
 
 #### Ubuntu
-You'll need  [[gorocksdb]](https://github.com/triasteam/go-streamnet/blob/master/docs/software/gorocksdb%20%E5%AE%89%E8%A3%85.md) installed first.
+You'll need  [[gorocksdb]](https://github.com/triasteam/go-streamnet/blob/master/docs/software/gorocksdb%20%E5%AE%89%E8%A3%85.md)[[redis]](https://redis.io/download) installed first.
 
 ##### Get Source Code
 
@@ -43,16 +43,10 @@ cd go-streamnet
 ##### Compile
 
 ```bash
-make install
+go build .
 ```
 
-to put the binary in `$GOPATH/bin` or use:
-
-```bash
-make build
-```
-
-to put the binary in `./build`.
+__This will generate a binary  file ,The binary's name is '**go-streamnet**', which is standing for Go-StreamNet.__
 
 #### MacOS
 
@@ -74,23 +68,38 @@ cd go-streamnet
 ##### Compile
 
 ```bash
-make install
+go build .
 ```
-
-to put the binary in `$GOPATH/bin` or use:
-
-```bash
-make build
-```
-
-to put the binary in `./build`.
-
-__The binary's name is '**gsn**', which is standing for Go-StreamNet.__
+__This will generate a binary  file ,The binary's name is '**go-streamnet**', which is standing for Go-StreamNet.__
 
 ## Run
-```bash
-./build/gsn
-```
+- Start on the same intranet segment  
+   One of the nodes run
+    ```bash
+    ./go-streamnet
+    ```
+    Other nodes
+    ```bash
+    ./go-streamnet -d /ip4/ipaddress/tcp/port/p2p/peerid
+    ```
+    ipaddresss is the first run  nodes's intranet ipaddress,port and peerid is Automatically generated in the first node run.
+- Start by relay  
+    One of the nodes run
+    ```bash
+    cd scripts/relay
+    go build .
+    ./relay  -address /ip4/relay-ipaddress/tcp/relay-port
+    ```
+    the second nodes
+    ```bash
+    ./go-streamnet -relay /ip4/relay-ipaddress/tcp/relay-port/p2p/relay-peerid
+    ```
+    other nodes
+    ```bash
+    ./go-streamnet -d /ip4/127.0.0.1/tcp/second-port/p2p/second-peerid  -relay  /ip4/relay-ipaddress/tcp/relay-port/p2p/relay-peerid
+    ```
+    relay-ipaddresss is the first run  nodes's extranet ipaddress,relay-port and relay-peerid is Automatically generated in the first node run.second-port and second-peerid is Automatically generated in the second node run.
+    
 ***Note***:
     Now you should start another terminal to input commands, or you can start the binary background with '&'.
 
