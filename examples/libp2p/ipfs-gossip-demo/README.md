@@ -82,3 +82,23 @@ ipfs使用的gossip协议是libp2p的 gossipsub 协议，接下来是该协议�
 		fmt.Printf("connect to host error: %s \n", err)
 	}
 ```
+
+
+## 启动方法
+```
+git clone https://github.com/triasteam/go-streamnet
+
+cd go-streamnet/examples/libp2p/ipfs-gossip-demo
+
+go build .
+
+// 默认监听45759端口，注意种子节点的45759需要开放到公网
+// 初次启动会创建私钥文件，该私钥用于生成固定的peer id
+./main
+
+```
+
+## 启动参数说明
+
+  - ```-seed``` 指定种子地址，完整格式为 ```/ip4/xxx.xxx.xxx.xxx/tcp/45759/ipfs/qmxxx```
+  - ```-port``` 如果开放的外网端口不是45759需要通过该参数指定，一般情况下保持默认即可
