@@ -2,7 +2,7 @@ package streamnet
 
 import (
 	"github.com/triasteam/go-streamnet/dag"
-	"github.com/triasteam/go-streamnet/network"
+	network "github.com/triasteam/go-streamnet/network/v2"
 	"github.com/triasteam/go-streamnet/store"
 	"github.com/triasteam/go-streamnet/tipselection"
 )

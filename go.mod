@@ -9,11 +9,23 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.2
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/libp2p/go-libp2p v0.11.0
 	github.com/libp2p/go-libp2p-circuit v0.3.1
 	github.com/libp2p/go-libp2p-core v0.6.1
+	github.com/libp2p/go-libp2p-kad-dht v0.10.0
+	github.com/libp2p/go-libp2p-mplex v0.2.4
+	github.com/libp2p/go-libp2p-pubsub v0.3.6
+	github.com/libp2p/go-libp2p-secio v0.2.2
+	github.com/libp2p/go-libp2p-swarm v0.2.8
+	github.com/libp2p/go-libp2p-yamux v0.3.0
+	github.com/libp2p/go-mplex v0.2.0 // indirect
+	github.com/libp2p/go-tcp-transport v0.2.1
+	github.com/libp2p/go-ws-transport v0.3.1
+	github.com/libp2p/go-yamux v1.4.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/multiformats/go-multiaddr v0.3.1
+	github.com/multiformats/go-multistream v0.2.0 // indirect
 	github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
@@ -23,11 +35,12 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.8
 	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
+	go.uber.org/zap v1.16.0 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/tools v0.0.0-20200809012840-6f4f008689da // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/grpc v1.28.1
+	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.2.5
 )

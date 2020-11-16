@@ -141,7 +141,8 @@ func SaveHandle(w http.ResponseWriter, r *http.Request) {
 // OnReceived means after received message from neigbors, first will poll parent and reference,
 // then getting origin message and store it to local.
 // "h" means local storage key, it's different from any other neigbors.
-func OnReceived(message string) error {
+func OnReceived(input []byte) error {
+	message := string(input)
 	var data types.SendData
 	err := json.Unmarshal([]byte(message), &data)
 	if err != nil {
@@ -201,6 +202,6 @@ func OnReceived(message string) error {
 
 func broadcast(message string) error {
 	// broadcast to other nodes
-	sn.Network.Broadcast(message)
+	sn.Network.Broadcast([]byte(message))
 	return nil
 }
