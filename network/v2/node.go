@@ -91,9 +91,7 @@ func getOrGeneratePrivateKey() crypto.PrivKey {
 
 // NewNode ...
 func NewNode(receive func(msg []byte) error) (*Node, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+	ctx := context.Background()
 	node := &Node{
 		Receive: receive,
 	}
@@ -195,14 +193,6 @@ func NewNode(receive func(msg []byte) error) (*Node, error) {
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT)
-
-	select {
-	case <-stop:
-		host.Close()
-		os.Exit(0)
-	case <-donec:
-		host.Close()
-	}
 	return node, nil
 }
 

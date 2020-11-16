@@ -34,6 +34,7 @@ func main() {
 	initStreamWork()
 
 	// start http server
+	fmt.Printf("========== begin to start web!")
 	server.Start(&GlobalData)
 }
 
@@ -68,5 +69,4 @@ func initStreamWork() {
 	}
 	// node.Init(server.OnReceived)
 	GlobalData.Network = node
-
 }
