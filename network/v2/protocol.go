@@ -77,7 +77,6 @@ func (procotol *StreamNetProtocol) updatePeer(ps *pubsub.PubSub, id peer.ID, han
 
 // chatInputLoop means how to chat with other peers
 func (procotol *StreamNetProtocol) chatInputLoop(ctx context.Context, h host.Host, ps *pubsub.PubSub, donec chan struct{}) {
-
 	for {
 		var msgB []byte
 		select {
@@ -92,5 +91,4 @@ func (procotol *StreamNetProtocol) chatInputLoop(ctx context.Context, h host.Hos
 			procotol.sendMessage(ps, msg)
 		}
 	}
-	donec <- struct{}{}
 }
