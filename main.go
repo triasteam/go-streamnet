@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	network "github.com/triasteam/go-streamnet/network/v2"
 	"github.com/triasteam/go-streamnet/streamnet"
@@ -37,6 +39,15 @@ func main() {
 
 	// start http server
 	server.Start(&GlobalData)
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT)
+
+	select {
+	case <-ctx.Done():
+	case <-stop:
+		os.Exit(0)
+	}
 }
 
 func initStreamWork(ctx context.Context) {
