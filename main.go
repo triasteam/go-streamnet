@@ -4,6 +4,7 @@ package main
 import (
 	//"bytes"
 
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -27,18 +28,18 @@ import (
 var GlobalData streamnet.StreamNet
 
 func main() {
+	ctx := context.Background()
 	// set log config
 	// todo: in debug mode, set the log module as following; if not in debug mode, don't set it.
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
-	initStreamWork()
+	initStreamWork(ctx)
 
 	// start http server
-	fmt.Printf("========== begin to start web!")
 	server.Start(&GlobalData)
 }
 
-func initStreamWork() {
+func initStreamWork(ctx context.Context) {
 	// open DB
 	store := store.Storage{}
 	fmt.Println("Port: " + streamnet_conf.EnvConfig.Port + ", DBpath: " + streamnet_conf.EnvConfig.DBPath)
@@ -62,7 +63,7 @@ func initStreamWork() {
 	// Set genesis trunk and branch
 
 	// init libp2p
-	node, err := network.NewNode(server.OnReceived)
+	node, err := network.NewNode(ctx, server.OnReceived)
 	if err != nil {
 		fmt.Printf("New Node error! err: %+v \n", err)
 		os.Exit(-1)
