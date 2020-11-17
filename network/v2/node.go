@@ -90,10 +90,10 @@ func getOrGeneratePrivateKey() crypto.PrivKey {
 }
 
 // NewNode ...
-func NewNode(receive func(msg []byte) error) (*Node, error) {
-	ctx := context.Background()
+func NewNode(ctx context.Context, receive func(msg []byte) error) (*Node, error) {
 	node := &Node{
-		Receive: receive,
+		Receive:         receive,
+		SendMessageChan: make(chan []byte),
 	}
 
 	cfg, _ := ParseFlags()
