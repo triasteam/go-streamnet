@@ -25,8 +25,6 @@ func Start(stream *streamnet.StreamNet) {
 	go startWeb(stream)
 	go startGrpc()
 
-	select {}
-
 }
 
 func startWeb(stream *streamnet.StreamNet) {
