@@ -18,3 +18,5 @@
 build/*
 
 db/
+
+go-streamnet
