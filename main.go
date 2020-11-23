@@ -51,6 +51,9 @@ func main() {
 }
 
 func initStreamWork(ctx context.Context) {
+    // parse config
+    cfg, _ := streamnet_conf.ParseFlags()
+
 	// open DB
 	store := store.Storage{}
 	fmt.Println("Port: " + streamnet_conf.EnvConfig.Port + ", DBpath: " + streamnet_conf.EnvConfig.DBPath)
@@ -74,7 +77,7 @@ func initStreamWork(ctx context.Context) {
 	// Set genesis trunk and branch
 
 	// init libp2p
-	node, err := network.NewNode(ctx, server.OnReceived)
+	node, err := network.NewNode(ctx, &cfg, server.OnReceived)
 	if err != nil {
 		fmt.Printf("New Node error! err: %+v \n", err)
 		os.Exit(-1)

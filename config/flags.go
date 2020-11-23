@@ -1,4 +1,4 @@
-package networkv2
+package config
 
 import (
 	"flag"
