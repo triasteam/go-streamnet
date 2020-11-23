@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/libp2p/go-libp2p"
+    "github.com/triasteam/go-streamnet/config"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -90,13 +91,11 @@ func getOrGeneratePrivateKey() crypto.PrivKey {
 }
 
 // NewNode ...
-func NewNode(ctx context.Context, receive func(msg []byte) error) (*Node, error) {
+func NewNode(ctx context.Context, cfg *config.Config, receive func(msg []byte) error) (*Node, error) {
 	node := &Node{
 		Receive:         receive,
 		SendMessageChan: make(chan []byte),
 	}
-
-	cfg, _ := ParseFlags()
 
 	transports := libp2p.ChainOptions(
 		libp2p.Transport(tcp.NewTCPTransport),

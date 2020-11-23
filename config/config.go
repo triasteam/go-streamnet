@@ -27,7 +27,7 @@ var (
 )
 
 // Config defines the top level configuration for a StreamNet node
-type Config struct {
+type TODO_Config struct {
 	RPC       *RPCConfig
 	P2P       *P2PConfig
 	Consensus *ConsensusConfig
