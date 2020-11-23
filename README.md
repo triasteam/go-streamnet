@@ -109,8 +109,13 @@ __This will generate a binary  file ,The binary's name is '**go-streamnet**', wh
 curl -X POST -d '{"Attester": "192.168.1.1", "Attestee": "192.168.1.2", "Score": "1"}' http://127.0.0.1:14700/save
 ```
 
-### get
+### query
+```bash
+curl -s -X POST http://127.0.0.1:14700/QueryNodes -d "{\"period\":1,\"numRank\":100}"
 ```
+
+### get
+```bash
 curl -X POST -d '{"key": "0xXXXXXXXXXXX"}' http://127.0.0.1:14700/get
 ```
 
