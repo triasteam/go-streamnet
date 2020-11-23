@@ -11,7 +11,7 @@ import (
 
 var handles = map[string]string{}
 
-const pubsubTopic = "/libp2p/example/chat/1.0.0"
+const pubsubTopic = "/libp2p/1.0.0"
 
 // PubSubHandler ...
 type PubSubHandler struct {
