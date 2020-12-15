@@ -125,7 +125,20 @@ func main() {
 
 	relayOption := func() config.Option {
 		if isAutoRelay {
-			return libp2p.ChainOptions(libp2p.EnableAutoRelay(), libp2p.EnableRelay(circuit.OptHop))
+			return libp2p.ChainOptions(libp2p.EnableAutoRelay(), libp2p.EnableRelay(circuit.OptHop), libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				for i, addr0 := range addrs {
+					saddr := addr0.String()
+					if strings.HasPrefix(saddr, "/ip4/127.0.0.1") {
+						addrNoIP := strings.TrimPrefix(saddr, "/ip4/127.0.0.1")
+						if cfg.PublicAddr == "" {
+							addrs[i] = multiaddr.StringCast("/dns4/localhost" + addrNoIP)
+						} else {
+							addrs[i] = multiaddr.StringCast(fmt.Sprintf("/dns4/%s", cfg.PublicAddr) + addrNoIP)
+						}
+					}
+				}
+				return addrs
+			}))
 		}
 		return func(cfg *config.Config) error { return nil }
 	}
@@ -139,16 +152,6 @@ func main() {
 		routing,
 		libp2p.Identity(priv),
 		relayOption(),
-		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
-			for i, addr0 := range addrs {
-				saddr := addr0.String()
-				if strings.HasPrefix(saddr, "/ip4/127.0.0.1") {
-					addrNoIP := strings.TrimPrefix(saddr, "/ip4/127.0.0.1")
-					addrs[i] = multiaddr.StringCast("/dns4/localhost" + addrNoIP)
-				}
-			}
-			return addrs
-		}),
 	)
 	if err != nil {
 		panic(err)
@@ -191,6 +194,26 @@ func main() {
 	} else {
 		fmt.Println("Connected to", targetInfo.ID)
 	}
+
+	// TEST: 每隔10秒钟打印一次对等方的地址
+	go func() {
+		var printer = func() {
+			if len(host.Peerstore().Peers()) < 1 {
+				fmt.Println("i have no peer.")
+			}
+			for _, p := range host.Peerstore().Peers() {
+				addrs := host.Peerstore().Addrs(p)
+				fmt.Printf("i have peer[%s], it's addrs is: %s \n", p.Pretty(), addrs)
+			}
+		}
+		ticker := time.NewTicker(time.Second * 10)
+		for {
+			select {
+			case <-ticker.C:
+				printer()
+			}
+		}
+	}()
 
 	mdns, err := discovery.NewMdnsService(ctx, host, time.Second*10, "")
 	if err != nil {
