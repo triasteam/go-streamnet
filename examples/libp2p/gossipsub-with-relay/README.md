@@ -19,6 +19,13 @@ go build .
   - ```-relaytype``` auto relay 类型，默认不指定表示该节点为非auto relay节点。可选取值为hop/autorelay
   - ```-public``` 公网IP，如果该节点被配置为了HOP则需要指定该节点的公网IP
 
+## 构造星型网络
+1. 启动种子，种子节点兼autorelay hop。注意默认状态下该节点启动15分钟才会对外发布autorelay地址
+   ./main -relaytype hop
+2. 启动七个docker：
+   ./main -seed /ip4/x.x.x.x/tcp/xxxx/ipfs/Qm -relaytype autorelay
+
+
 ## 功能说明
 该demo用于演示如何在复杂网络环境下使用libp2p组建gossip网络。对等节点如果处于NAT环境中则可以采用中继的方式组建网络。
 
