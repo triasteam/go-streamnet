@@ -1,7 +1,30 @@
-## 功能说明
-该demo用于演示如何在公网环境下使用libp2p组建gossip网络。
-首先，需要对本地host进行配置，如下：
+## 使用方法
 ```
+git clone https://github.com/triasteam/go-streamnet
+
+cd go-streamnet/examples/libp2p/gossipsub-with-relay
+
+go build .
+
+// 默认监听45759端口，注意种子节点的45759需要开放到公网
+// 初次启动会创建私钥文件，该私钥用于生成固定的peer id
+./main
+
+```
+
+## 启动参数说明
+
+  - ```-seed``` 指定种子地址，完整格式为 ```/ip4/xxx.xxx.xxx.xxx/tcp/45759/ipfs/qmxxx```
+  - ```-port``` 如果开放的外网端口不是45759需要通过该参数指定，一般情况下保持默认即可
+  - ```-relaytype``` auto relay 类型，默认不指定表示该节点为非auto relay节点。可选取值为hop/autorelay
+  - ```-public``` 公网IP，如果该节点被配置为了HOP则需要指定该节点的公网IP
+
+## 功能说明
+该demo用于演示如何在复杂网络环境下使用libp2p组建gossip网络。对等节点如果处于NAT环境中则可以采用中继的方式组建网络。
+
+关键配置代码如下：
+```
+    // 首先，需要对本地host进行配置
     // 使用tcp和ws的连接
 	transports := libp2p.ChainOptions(
 		libp2p.Transport(tcp.NewTCPTransport),
@@ -35,6 +58,32 @@
     // 设置私钥，固定的peer ID也是由此生成
 	priv := getOrGeneratePrivateKey()
 
+    // 配置中继，如果参数未指定中继则不进行配置。
+	// 对等节点只可以是 普通节点/中继hop/自动中继 其中的一种
+	relayOption := func() config.Option {
+		if cfg.RelayType == "hop" {
+			return libp2p.ChainOptions(libp2p.EnableAutoRelay(), libp2p.EnableRelay(circuit.OptHop), libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				for i, addr0 := range addrs {
+					saddr := addr0.String()
+					if strings.HasPrefix(saddr, "/ip4/127.0.0.1") {
+						addrNoIP := strings.TrimPrefix(saddr, "/ip4/127.0.0.1")
+						fmt.Printf("result : %d, public: %s \n", len(cfg.PublicAddr), cfg.PublicAddr)
+						if len(cfg.PublicAddr) == 0 {
+							addrs[i] = multiaddr.StringCast("/dns4/localhost" + addrNoIP)
+						} else {
+							addrs[i] = multiaddr.StringCast(fmt.Sprintf("/ip4/%s", cfg.PublicAddr) + addrNoIP)
+						}
+					}
+				}
+				return addrs
+			}))
+		} else if cfg.RelayType == "autorelay" {
+			return libp2p.ChainOptions(libp2p.EnableAutoRelay())
+		}
+		return func(cfg *config.Config) error { return nil }
+
+	}	
+
     // 创建新的host
 	host, err := libp2p.New(
 		ctx,
@@ -44,6 +93,7 @@
 		security,
 		routing,
 		libp2p.Identity(priv),
+		relayOption,
 	)
 ```
 
@@ -84,21 +134,4 @@ ipfs使用的gossip协议是libp2p的 gossipsub 协议，接下来是该协议�
 ```
 
 
-## 启动方法
-```
-git clone https://github.com/triasteam/go-streamnet
 
-cd go-streamnet/examples/libp2p/ipfs-gossip-demo
-
-go build .
-
-// 默认监听45759端口，注意种子节点的45759需要开放到公网
-// 初次启动会创建私钥文件，该私钥用于生成固定的peer id
-./main
-
-```
-
-## 启动参数说明
-
-  - ```-seed``` 指定种子地址，完整格式为 ```/ip4/xxx.xxx.xxx.xxx/tcp/45759/ipfs/qmxxx```
-  - ```-port``` 如果开放的外网端口不是45759需要通过该参数指定，一般情况下保持默认即可
