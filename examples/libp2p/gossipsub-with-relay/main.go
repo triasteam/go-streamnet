@@ -121,26 +121,29 @@ func main() {
 
 	priv := getOrGeneratePrivateKey()
 
-	isAutoRelay := cfg.UseRelay
-
 	relayOption := func() config.Option {
-		if isAutoRelay {
+
+		if cfg.RelayType == "hop" {
 			return libp2p.ChainOptions(libp2p.EnableAutoRelay(), libp2p.EnableRelay(circuit.OptHop), libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
 				for i, addr0 := range addrs {
 					saddr := addr0.String()
 					if strings.HasPrefix(saddr, "/ip4/127.0.0.1") {
 						addrNoIP := strings.TrimPrefix(saddr, "/ip4/127.0.0.1")
-						if cfg.PublicAddr == "" {
+						fmt.Printf("result : %d, public: %s \n", len(cfg.PublicAddr), cfg.PublicAddr)
+						if len(cfg.PublicAddr) == 0 {
 							addrs[i] = multiaddr.StringCast("/dns4/localhost" + addrNoIP)
 						} else {
-							addrs[i] = multiaddr.StringCast(fmt.Sprintf("/dns4/%s", cfg.PublicAddr) + addrNoIP)
+							addrs[i] = multiaddr.StringCast(fmt.Sprintf("/ip4/%s", cfg.PublicAddr) + addrNoIP)
 						}
 					}
 				}
 				return addrs
 			}))
+		} else if cfg.RelayType == "autorelay" {
+			return libp2p.ChainOptions(libp2p.EnableAutoRelay())
 		}
 		return func(cfg *config.Config) error { return nil }
+
 	}
 
 	host, err := libp2p.New(
@@ -159,9 +162,17 @@ func main() {
 	fmt.Printf("my peer is /ip4/127.0.0.1/tcp/%s/ipfs/%s \n", cfg.Port, host.ID().Pretty())
 
 	// 触发搜索autorelay
-	if isAutoRelay {
-		privEmitter, _ := host.EventBus().Emitter(new(event.EvtLocalReachabilityChanged))
-		privEmitter.Emit(event.EvtLocalReachabilityChanged{Reachability: network.ReachabilityPrivate})
+	if cfg.RelayType == "autorelay" {
+		go func() {
+			ticker := time.NewTicker(time.Second * 5)
+			for {
+				select {
+				case <-ticker.C:
+					privEmitter, _ := host.EventBus().Emitter(new(event.EvtLocalReachabilityChanged))
+					privEmitter.Emit(event.EvtLocalReachabilityChanged{Reachability: network.ReachabilityPrivate})
+				}
+			}
+		}()
 	}
 
 	ps, err := pubsub.NewGossipSub(ctx, host)
