@@ -8,7 +8,7 @@ Relay 介绍
 
    实验准备：
 
-    - 准备两台公网机器（AutoRelay Hop简称Hop 和 Peer As Seed简称Seed）和两台处于不同网段的局域网机器（PC1，PC2），其中 Hop与Seed可以ping通，PC1与Hop和Seed分别可以ping通，PC2与Hop和Seed可以ping通，PC1和PC2不能ping通。其拓扑图如下：
+    - 准备两台公网机器（AutoRelay Hop简称Hop 和 Peer As Seed简称Seed）和两台处于不同网段的局域网机器（N1，N2），其中 Hop与Seed可以ping通，N1与Hop和Seed分别可以ping通，N2与Hop和Seed可以ping通，N1和N2不能ping通。其拓扑图如下：
 
       <img src="./images/autorelaytopology.jpg" alt="图一" style="zoom:50%;" />
 
@@ -30,11 +30,11 @@ Relay 介绍
    - 启动Seed；
 
    - 启动Hop；
-   - 启动PC1、PC2；
+   - 启动N1、N2；
    - 等待30秒钟，待日志打印的地址中出现 “circuit” 字样后可以进行下一步操作；
    - 从任意一台机器控制台进行输入，其余三台机器均可以接收到消息；
-   - 停止Seed，从PC1控制台发送消息，PC2可以接收到。说明种子只起引导作用，在网络建立起来之后可以随时关停掉；
-   - 停止Hop，从PC1（或PC2）控制台发送消息，PC2（或PC1）无法接收到，说明PC1和PC2是通过中继进行通信的，停止中继其通信通道被中断。
+   - 停止Seed，从N1控制台发送消息，N2可以接收到。说明种子只起引导作用，在网络建立起来之后可以随时关停掉；
+   - 停止Hop，从N1（或N2）控制台发送消息，N2（或N1）无法接收到，说明N1和N2是通过中继进行通信的，停止中继其通信通道被中断。
 
 2. 原理说明
 
@@ -116,7 +116,7 @@ Relay 介绍
 
    - libp2p的架构图如下，其中种子节点作用于Peer Routing，relay作用于transport，autorelay作用于content routing和transport。
 
-     <img src="./images/libp2p-architecture.jpg" style="zoom:48%;" />
+     <img src="./images/libp2p_architecture.jpg" style="zoom:48%;" />
 
    
 
