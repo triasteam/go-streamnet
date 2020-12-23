@@ -20,16 +20,17 @@ go build .
   - ```-public``` 公网IP，如果该节点被配置为了HOP则需要指定该节点的公网IP
 
 ## 构造星型网络
-- Build image
+- Build image  
 docker build -t ${image_name}:${tag} .
-- Build the network
+- Build the network  
 docker network create -d bridge ${network_name}
-- Run a container
+- Run a container  
 docker run -itd --name ${container_name} -p ${hostPort}:${containerPort}  ${image_name}:${tag}
-- Connect to specified network
+- Connect to specified network  
 docker network connect  ${network_name}  ${container_name}
-- Disconnect the bridge network of all containers
-docker network disconnect bridge   ${container_name}
+- Disconnect the bridge network of all containers  
+docker network disconnect bridge   ${container_name}  
+
 1. 启动种子，种子节点兼autorelay hop。注意默认状态下该节点启动15分钟才会对外发布autorelay地址
    ./main -relaytype hop
 2. 启动七个docker：
