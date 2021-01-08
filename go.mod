@@ -19,29 +19,24 @@ require (
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
 	github.com/libp2p/go-addr-util v0.0.2 // indirect
 	github.com/libp2p/go-flow-metrics v0.0.3 // indirect
-	github.com/libp2p/go-libp2p v0.4.2
-	github.com/libp2p/go-libp2p-circuit v0.1.4
-	github.com/libp2p/go-libp2p-connmgr v0.2.0 // indirect
+	github.com/libp2p/go-libp2p v0.12.0
+	github.com/libp2p/go-libp2p-circuit v0.4.0
 	github.com/libp2p/go-libp2p-core v0.7.0
-	github.com/libp2p/go-libp2p-kad-dht v0.3.0
-	github.com/libp2p/go-libp2p-mplex v0.2.1
-	github.com/libp2p/go-libp2p-pnet v0.1.0 // indirect
-	github.com/libp2p/go-libp2p-pubsub v0.1.0
-	github.com/libp2p/go-libp2p-secio v0.2.1
-	github.com/libp2p/go-libp2p-testing v0.1.1 // indirect
-	github.com/libp2p/go-libp2p-yamux v0.2.1
-	github.com/libp2p/go-mplex v0.1.2 // indirect
+	github.com/libp2p/go-libp2p-kad-dht v0.11.1
+	github.com/libp2p/go-libp2p-mplex v0.3.0
+	github.com/libp2p/go-libp2p-pubsub v0.4.0
+	github.com/libp2p/go-libp2p-secio v0.2.2
+	github.com/libp2p/go-libp2p-yamux v0.4.0
 	github.com/libp2p/go-msgio v0.0.6 // indirect
 	github.com/libp2p/go-openssl v0.0.7 // indirect
 	github.com/libp2p/go-reuseport-transport v0.0.4 // indirect
-	github.com/libp2p/go-tcp-transport v0.1.1
-	github.com/libp2p/go-ws-transport v0.1.2
+	github.com/libp2p/go-tcp-transport v0.2.1
+	github.com/libp2p/go-ws-transport v0.3.1
 	github.com/libp2p/go-yamux v1.4.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-multiaddr v0.3.1
 	github.com/multiformats/go-multistream v0.2.0 // indirect
-	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d
