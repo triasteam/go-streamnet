@@ -5,15 +5,19 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
-    "github.com/triasteam/go-streamnet/config"
+	circuit "github.com/libp2p/go-libp2p-circuit"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
 	kaddht "github.com/libp2p/go-libp2p-kad-dht"
@@ -21,10 +25,12 @@ import (
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	secio "github.com/libp2p/go-libp2p-secio"
 	yamux "github.com/libp2p/go-libp2p-yamux"
+	"github.com/libp2p/go-libp2p/config"
 	"github.com/libp2p/go-libp2p/p2p/discovery"
 	tcp "github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
 	"github.com/multiformats/go-multiaddr"
+	localConfig "github.com/triasteam/go-streamnet/config"
 )
 
 const (
@@ -61,7 +67,7 @@ func loadFromPem() (crypto.PrivKey, error) {
 func exportToPem(priv crypto.PrivKey) error {
 	privBytes, err := crypto.MarshalPrivateKey(priv)
 	if err != nil {
-		fmt.Printf("marshal private key error: %s \n", err)
+		log.Printf("marshal private key error: %s \n", err)
 		return err
 	}
 	privPem := pem.EncodeToMemory(
@@ -70,7 +76,7 @@ func exportToPem(priv crypto.PrivKey) error {
 			Bytes: privBytes,
 		},
 	)
-	fmt.Println("private pem: ", privPem)
+	log.Println("private pem: ", privPem)
 	ioutil.WriteFile(privateName, []byte(privPem), 0644)
 	return nil
 }
@@ -84,14 +90,14 @@ func getOrGeneratePrivateKey() crypto.PrivKey {
 		}
 		err = exportToPem(priv)
 		if err != nil {
-			fmt.Printf("export private key error: %s \n", err)
+			log.Printf("export private key error: %s \n", err)
 		}
 	}
 	return priv
 }
 
 // NewNode ...
-func NewNode(ctx context.Context, cfg *config.Config, receive func(msg []byte) error) (*Node, error) {
+func NewNode(ctx context.Context, cfg *localConfig.Config, receive func(msg []byte) error) (*Node, error) {
 	node := &Node{
 		Receive:         receive,
 		SendMessageChan: make(chan []byte),
@@ -117,12 +123,36 @@ func NewNode(ctx context.Context, cfg *config.Config, receive func(msg []byte) e
 	var dht *kaddht.IpfsDHT
 	newDHT := func(h host.Host) (routing.PeerRouting, error) {
 		var err error
-		dht, err = kaddht.New(ctx, h)
+		dht, err = kaddht.New(ctx, h, kaddht.Mode(kaddht.ModeAutoServer))
 		return dht, err
 	}
 	routing := libp2p.Routing(newDHT)
 
 	priv := getOrGeneratePrivateKey()
+
+	relayOption := func() config.Option {
+		if cfg.RelayType == "hop" {
+			return libp2p.ChainOptions(libp2p.EnableAutoRelay(), libp2p.EnableRelay(circuit.OptHop), libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				for i, addr0 := range addrs {
+					saddr := addr0.String()
+					if strings.HasPrefix(saddr, "/ip4/127.0.0.1") {
+						addrNoIP := strings.TrimPrefix(saddr, "/ip4/127.0.0.1")
+						log.Printf("result : %d, public: %s \n", len(cfg.PublicAddr), cfg.PublicAddr)
+						if len(cfg.PublicAddr) == 0 {
+							addrs[i] = multiaddr.StringCast("/dns4/localhost" + addrNoIP)
+						} else {
+							addrs[i] = multiaddr.StringCast(fmt.Sprintf("/ip4/%s", cfg.PublicAddr) + addrNoIP)
+						}
+					}
+				}
+				return addrs
+			}))
+		} else if cfg.RelayType == "autorelay" {
+			return libp2p.ChainOptions(libp2p.EnableAutoRelay())
+		}
+		return func(cfg *config.Config) error { return nil }
+
+	}
 
 	host, err := libp2p.New(
 		ctx,
@@ -132,11 +162,28 @@ func NewNode(ctx context.Context, cfg *config.Config, receive func(msg []byte) e
 		security,
 		routing,
 		libp2p.Identity(priv),
+		relayOption(),
 	)
+
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("my peer is /ip4/127.0.0.1/tcp/%s/ipfs/%s \n", cfg.Port, host.ID().Pretty())
+	log.Printf("my peer is /ip4/127.0.0.1/tcp/%s/ipfs/%s \n", cfg.Port, host.ID().Pretty())
+
+	// 触发搜索autorelay
+	if cfg.RelayType == "autorelay" {
+		go func() {
+			ticker := time.NewTicker(time.Second * 5)
+			for {
+				log.Printf("begin to find auto relay hop ... ")
+				select {
+				case <-ticker.C:
+					privEmitter, _ := host.EventBus().Emitter(new(event.EvtLocalReachabilityChanged))
+					privEmitter.Emit(event.EvtLocalReachabilityChanged{Reachability: network.ReachabilityPrivate})
+				}
+			}
+		}()
+	}
 
 	ps, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
@@ -152,7 +199,7 @@ func NewNode(ctx context.Context, cfg *config.Config, receive func(msg []byte) e
 	go psh.pubsubHandler(ctx, sub)
 
 	for _, addr := range host.Addrs() {
-		fmt.Println("Listening on", addr)
+		log.Println("Listening on", addr)
 	}
 
 	targetAddr, err := multiaddr.NewMultiaddr(cfg.Seed)
@@ -167,9 +214,9 @@ func NewNode(ctx context.Context, cfg *config.Config, receive func(msg []byte) e
 
 	err = host.Connect(ctx, *targetInfo)
 	if err != nil {
-		fmt.Printf("connect to host error: %s \n", err)
+		log.Printf("connect to host error: %s \n", err)
 	} else {
-		fmt.Println("Connected to", targetInfo.ID)
+		log.Println("Connected to", targetInfo.ID)
 	}
 
 	mdns, err := discovery.NewMdnsService(ctx, host, time.Second*10, "")
