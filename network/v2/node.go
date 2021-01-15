@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -175,7 +176,19 @@ func NewNode(ctx context.Context, cfg *localConfig.Config, receive func(msg []by
 		go func() {
 			ticker := time.NewTicker(time.Second * 5)
 			for {
-				log.Printf("begin to find auto relay hop ... ")
+				relayHop := []peer.ID{}
+				for _, p := range host.Peerstore().Peers() {
+					addrs := host.Peerstore().Addrs(p)
+					for _, addr := range addrs {
+						if match, _ := regexp.Match("p2p-circuit", []byte(addr.String())); match {
+							relayHop = append(relayHop, p)
+							break
+						}
+					}
+				}
+				if len(relayHop) > 0 {
+					log.Printf("Find Relay %s!! \n", relayHop)
+				}
 				select {
 				case <-ticker.C:
 					privEmitter, _ := host.EventBus().Emitter(new(event.EvtLocalReachabilityChanged))
