@@ -113,7 +113,7 @@ func getOrGeneratePrivateKey() crypto.PrivKey {
 	return priv
 }
 
-// NewNode ...
+// NewNode build a network node, you can add autorelay, gossip to it
 func NewNode(ctx context.Context, cfg *localConfig.Config, receive func(msg []byte) error) (*Node, error) {
 	node := &Node{
 		Receive:         receive,
@@ -191,19 +191,20 @@ func NewNode(ctx context.Context, cfg *localConfig.Config, receive func(msg []by
 	if cfg.RelayType == "autorelay" {
 		go func() {
 			ticker := time.NewTicker(time.Second * 5)
+
 			for {
-				relayHop := []peer.ID{}
+				relayHop := make(map[string]struct{})
 				for _, p := range host.Peerstore().Peers() {
 					addrs := host.Peerstore().Addrs(p)
 					for _, addr := range addrs {
 						if match, _ := regexp.Match("p2p-circuit", []byte(addr.String())); match {
-							relayHop = append(relayHop, p)
-							break
+							peerID := ParseRelayPeerID(addr)
+							relayHop[peerID] = struct{}{}
 						}
 					}
 				}
 				if len(relayHop) > 0 {
-					log.Printf("Find Relay %s!! \n", relayHop)
+					log.Printf("Find Relay %v!! \n", relayHop)
 				}
 				select {
 				case <-ticker.C:
