@@ -80,7 +80,7 @@ __This will generate a binary  file ,The binary's name is '**go-streamnet**', wh
     ```
     Other nodes
     ```bash
-    ./go-streamnet -d /ip4/ipaddress/tcp/port/p2p/peerid
+    ./go-streamnet -seed /ip4/ipaddress/tcp/port/p2p/peerid
     ```
     ipaddresss is the first run  nodes's intranet ipaddress,port and peerid is Automatically generated in the first node run.
 - Start by relay  
