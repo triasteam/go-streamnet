@@ -1,3 +1,17 @@
+// Copyright 2017 The GoReporter Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Package dag provides graph storage.
 package dag
 
 import (
@@ -9,6 +23,7 @@ import (
 )
 
 // Dag is the most important struct in the whole procedure.
+// memory storage of graph, output a total order of nodes with conflux algorithm
 type Dag struct {
 	graph       map[types.Hash]types.Set  // parents of one node
 	parentGraph map[types.Hash]types.Hash // trunk parent of one node
@@ -73,113 +88,113 @@ func (dag *Dag) Init(db *store.Storage) {
 }
 
 // Close will free all the resources.
-func (d *Dag) Close() {
+func (dag *Dag) Close() {
 
 }
 
 // Add puts one tx hash into dag.
-func (d *Dag) Add(key types.Hash, tx *types.Transaction) error {
+func (dag *Dag) Add(key types.Hash, tx *types.Transaction) error {
 	trunk := tx.GetTrunkTransactionHash()
 	branch := tx.GetBranchTransactionHash()
 
-	d.graphLock.Lock()
-	defer d.graphLock.Unlock()
+	dag.graphLock.Lock()
+	defer dag.graphLock.Unlock()
 
-	d.updateGraph(key, trunk, branch)
+	dag.updateGraph(key, trunk, branch)
 
-	d.updateTopologicalOrder(key, trunk, branch)
+	dag.updateTopologicalOrder(key, trunk, branch)
 
-	d.updateScore(key)
+	dag.updateScore(key)
 
 	return nil
 }
 
-func (d *Dag) updateGraph(key, trunk, branch types.Hash) {
+func (dag *Dag) updateGraph(key, trunk, branch types.Hash) {
 	// Approve graph
-	if _, exist := d.graph[key]; !exist {
-		d.graph[key] = types.NewSet()
+	if _, exist := dag.graph[key]; !exist {
+		dag.graph[key] = types.NewSet()
 	}
-	d.graph[key].Add(trunk)
-	d.graph[key].Add(branch)
+	dag.graph[key].Add(trunk)
+	dag.graph[key].Add(branch)
 
 	//parentGraph
-	d.parentGraph[key] = trunk
+	dag.parentGraph[key] = trunk
 
 	// Approvee graph
-	if _, exist := d.revGraph[trunk]; !exist {
-		d.revGraph[trunk] = types.NewSet()
+	if _, exist := dag.revGraph[trunk]; !exist {
+		dag.revGraph[trunk] = types.NewSet()
 	}
-	d.revGraph[trunk].Add(key)
-	if _, exist := d.revGraph[branch]; !exist {
-		d.revGraph[branch] = types.NewSet()
+	dag.revGraph[trunk].Add(key)
+	if _, exist := dag.revGraph[branch]; !exist {
+		dag.revGraph[branch] = types.NewSet()
 	}
-	d.revGraph[branch].Add(key)
+	dag.revGraph[branch].Add(key)
 
-	if _, exist := d.parentRevGraph[trunk]; !exist {
-		d.parentRevGraph[trunk] = types.NewSet()
+	if _, exist := dag.parentRevGraph[trunk]; !exist {
+		dag.parentRevGraph[trunk] = types.NewSet()
 	}
-	d.parentRevGraph[trunk].Add(key)
+	dag.parentRevGraph[trunk].Add(key)
 
 	// update degrees
-	if _, exist := d.degrees[key]; !exist || d.degrees[key] == 0 {
-		d.degrees[key] = 2
+	if _, exist := dag.degrees[key]; !exist || dag.degrees[key] == 0 {
+		dag.degrees[key] = 2
 	}
-	if _, exist := d.degrees[trunk]; !exist {
-		d.degrees[trunk] = 0
+	if _, exist := dag.degrees[trunk]; !exist {
+		dag.degrees[trunk] = 0
 	}
-	if _, exist := d.degrees[branch]; !exist {
-		d.degrees[branch] = 0
+	if _, exist := dag.degrees[branch]; !exist {
+		dag.degrees[branch] = 0
 	}
 }
 
-func (d *Dag) updateTopologicalOrder(key, trunk, branch types.Hash) {
-	if len(d.topOrderStreaming) == 0 {
-		d.topOrderStreaming[1] = types.NewSet()
-		d.topOrderStreaming[1].Add(key)
-		d.levels[key] = 1
-		d.topOrderStreaming[0] = types.NewSet()
-		d.topOrderStreaming[0].Add(trunk)
-		d.topOrderStreaming[0].Add(branch)
-		d.totalDepth = 1
+func (dag *Dag) updateTopologicalOrder(key, trunk, branch types.Hash) {
+	if len(dag.topOrderStreaming) == 0 {
+		dag.topOrderStreaming[1] = types.NewSet()
+		dag.topOrderStreaming[1].Add(key)
+		dag.levels[key] = 1
+		dag.topOrderStreaming[0] = types.NewSet()
+		dag.topOrderStreaming[0].Add(trunk)
+		dag.topOrderStreaming[0].Add(branch)
+		dag.totalDepth = 1
 		return
 	} else {
 		// TODO: check trunk or branch exist !!!!!!!!!
 		// Or we won't call Add if trunk or branch not exist!!!!
-		trunkLevel := d.levels[trunk]
-		branchLevel := d.levels[branch]
+		trunkLevel := dag.levels[trunk]
+		branchLevel := dag.levels[branch]
 		level := utils.Min(trunkLevel, branchLevel) + 1
-		if _, exist := d.topOrderStreaming[level]; !exist {
-			d.topOrderStreaming[level] = types.NewSet()
-			d.totalDepth++
+		if _, exist := dag.topOrderStreaming[level]; !exist {
+			dag.topOrderStreaming[level] = types.NewSet()
+			dag.totalDepth++
 		}
-		d.topOrderStreaming[level].Add(key)
-		d.levels[key] = level
+		dag.topOrderStreaming[level].Add(key)
+		dag.levels[key] = level
 	}
 }
 
-func (d *Dag) updateScore(key types.Hash) {
+func (dag *Dag) updateScore(key types.Hash) {
 	// todo: use config to choose score algorithm.
 	scoreAlg := "CUM_WEIGHT"
 
 	if scoreAlg == "CUM_WEIGHT" {
-		CumulateWeight{}.UpdateScore(d.graph, d.score, key, 1)
-		CumulateWeight{}.UpdateTrunkScore(d.parentGraph, d.parentScore, key, 1)
+		CumulateWeight{}.UpdateScore(dag.graph, dag.score, key, 1)
+		CumulateWeight{}.UpdateTrunkScore(dag.parentGraph, dag.parentScore, key, 1)
 
 	} else if scoreAlg == "KATZ" {
-		d.score[key] = 1.0 / (float64(len(d.score)) + 1.0)
-		centrality := NewKatz(d.graph, d.revGraph, d.score, 0.5)
-		d.score = centrality.Compute()
-		CumulateWeight{}.UpdateTrunkScore(d.parentGraph, d.parentScore, key, 1)
+		dag.score[key] = 1.0 / (float64(len(dag.score)) + 1.0)
+		centrality := NewKatz(dag.graph, dag.revGraph, dag.score, 0.5)
+		dag.score = centrality.Compute()
+		CumulateWeight{}.UpdateTrunkScore(dag.parentGraph, dag.parentScore, key, 1)
 	}
-	d.freshScore = false
+	dag.freshScore = false
 }
 
 // GetPivotalHash returns the pivot hash of dag from genesis. depth is 0, 1, 2...
-func (d *Dag) GetPivotalHash(depth int) types.Hash {
+func (dag *Dag) GetPivotalHash(depth int) types.Hash {
 	var ret types.Hash
-	d.BuildPivotChain()
-	if depth == -1 || depth >= d.pivotChain.Length() {
-		set := d.topOrderStreaming[1]
+	dag.BuildPivotChain()
+	if depth == -1 || depth >= dag.pivotChain.Length() {
+		set := dag.topOrderStreaming[1]
 		if set.IsEmpty() {
 			return types.NilHash
 		}
@@ -187,32 +202,32 @@ func (d *Dag) GetPivotalHash(depth int) types.Hash {
 		return ret
 	}
 
-	ret = d.pivotChain.Index(d.pivotChain.Length() - depth - 1)
+	ret = dag.pivotChain.Index(dag.pivotChain.Length() - depth - 1)
 	return ret
 }
 
-func (d *Dag) BuildPivotChain() {
-	d.graphLock.RLock()
-	defer d.graphLock.RUnlock()
-	d.pivotChain = d.getPivotChainFrom(d.GetGenesis())
+func (dag *Dag) BuildPivotChain() {
+	dag.graphLock.RLock()
+	defer dag.graphLock.RUnlock()
+	dag.pivotChain = dag.getPivotChainFrom(dag.GetGenesis())
 }
 
 // get the pivot chain after the giving node.
-func (d *Dag) getPivotChainFrom(start types.Hash) types.List {
-	/*d.graphLock.RLock()
-	defer d.graphLock.RUnlock()*/
+func (dag *Dag) getPivotChainFrom(start types.Hash) types.List {
+	/*dag.graphLock.RLock()
+	defer dag.graphLock.RUnlock()*/
 
 	list := types.List{}
 
-	if _, exist := d.graph[start]; start == types.NilHash || !exist {
+	if _, exist := dag.graph[start]; start == types.NilHash || !exist {
 		return list
 	}
 
 	list.Append(start)
 
-	children, ok := d.parentRevGraph[start]
+	children, ok := dag.parentRevGraph[start]
 	for ok && !children.IsEmpty() {
-		child := d.getMax(children)
+		child := dag.getMax(&children)
 		if child == types.NilHash {
 			return list
 		}
@@ -220,33 +235,33 @@ func (d *Dag) getPivotChainFrom(start types.Hash) types.List {
 		list.Append(child)
 
 		start = child
-		children, ok = d.parentRevGraph[start]
+		children, ok = dag.parentRevGraph[start]
 	}
 
 	return list
 }
 
-// todo: use config to get genesis directly; if genesis_forward is implemented, it should be as following.
-func (d *Dag) GetGenesis() types.Hash {
-	if d.ancestors != nil && !d.ancestors.Empty() {
-		return d.ancestors.Peek()
+// GetGenesis todo: use config to get genesis directly; if genesis_forward is implemented, it should be as following.
+func (dag *Dag) GetGenesis() types.Hash {
+	if dag.ancestors != nil && !dag.ancestors.Empty() {
+		return dag.ancestors.Peek()
 	}
 
 	// find one node whose trunk parent is not in parentGraph
-	for key, trunk := range d.parentGraph {
-		if _, ok := d.parentGraph[trunk]; !ok {
+	for key, trunk := range dag.parentGraph {
+		if _, ok := dag.parentGraph[trunk]; !ok {
 			return key
 		}
 	}
 	return types.NilHash
 }
 
-func (d *Dag) getMax(set types.Set) types.Hash {
+func (dag *Dag) getMax(set *types.Set) types.Hash {
 	tmpMaxScore := -1.0
 	result := types.NilHash
 
 	for _, child := range set.List() {
-		if score, exist := d.parentScore[child]; exist {
+		if score, exist := dag.parentScore[child]; exist {
 			if score > tmpMaxScore {
 				tmpMaxScore = score
 				result = child
@@ -262,46 +277,51 @@ func (d *Dag) getMax(set types.Set) types.Hash {
 	return result
 }
 
-func (d *Dag) GetLastPivot(start types.Hash) types.Hash {
-	d.graphLock.RLock()
-	defer d.graphLock.RUnlock()
+// GetLastPivot ...
+func (dag *Dag) GetLastPivot(start types.Hash) types.Hash {
+	dag.graphLock.RLock()
+	defer dag.graphLock.RUnlock()
 
-	if _, exist := d.graph[start]; start == types.NilHash || !exist {
+	if _, exist := dag.graph[start]; start == types.NilHash || !exist {
 		return types.NilHash
 	}
-	children, exist := d.parentRevGraph[start]
+	children, exist := dag.parentRevGraph[start]
 	for exist && !children.IsEmpty() {
-		child := d.getMax(children)
+		child := dag.getMax(&children)
 		if child == types.NilHash {
 			return start
 		}
 		start = child
-		children, exist = d.parentRevGraph[start]
+		children, exist = dag.parentRevGraph[start]
 	}
 	return start
 }
 
-func (d *Dag) GetChildren(cur types.Hash) types.Set {
-	if children, exist := d.revGraph[cur]; exist {
-		return children
+// GetChildren returns nodes whoes parent is input param `cur`,
+// if `cur` has no nodes referenced empty set will return
+func (dag *Dag) GetChildren(cur types.Hash) *types.Set {
+	if children, exist := dag.revGraph[cur]; exist {
+		return &children
 	}
 
-	return types.NewSet()
+	s := types.NewSet()
+	return &s
 }
 
-func (d *Dag) Contains(key types.Hash) bool {
-	_, exist := d.graph[key]
+// Contains ...
+func (dag *Dag) Contains(key types.Hash) bool {
+	_, exist := dag.graph[key]
 	return exist
 }
 
-func (d *Dag) GetScore(key types.Hash) float64 {
-	d.graphLock.RLock()
-	defer d.graphLock.RUnlock()
+// GetScore not calculate, get from score map
+func (dag *Dag) GetScore(key types.Hash) float64 {
+	dag.graphLock.RLock()
+	defer dag.graphLock.RUnlock()
 
-	score, exist := d.score[key]
+	score, exist := dag.score[key]
 	if exist {
 		return score
-	} else {
-		return 0.0
 	}
+	return 0.0
 }
