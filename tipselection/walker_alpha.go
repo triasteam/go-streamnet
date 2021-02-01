@@ -63,7 +63,7 @@ func (walker *WalkerAlpha) findNextValidTail(tailHash types.Hash, ratings map[ty
 	return nextTailHash
 }
 
-func selects(ratings map[types.Hash]int, approversSet types.Set) types.Hash {
+func selects(ratings map[types.Hash]int, approversSet *types.Set) types.Hash {
 	//filter based on tangle state when starting the walk
 	approvers := types.List{}
 	for _, hash := range approversSet.List() {
