@@ -10,6 +10,7 @@ import (
 
 	"github.com/triasteam/go-streamnet/abci/proto"
 	"github.com/triasteam/go-streamnet/types"
+	"github.com/triasteam/go-streamnet/utils"
 	"google.golang.org/grpc"
 )
 
@@ -88,9 +89,13 @@ func QueryNodesHandle(w http.ResponseWriter, r *http.Request) {
 	// get data from dag
 	value := sn.Dag.GetTotalOrder()
 
+	// FIXME while change genesis forward, this method would be changed.
+	// Get peroid using paging algorithm
+
+	data4Period := utils.Paging(value, params.Period, int(params.NumRank))
 	// get tx's dataHash from db
 	input := make([]string, 0)
-	for _, hash := range value {
+	for _, hash := range data4Period {
 		txBytes, err := sn.Store.Get(hash.Bytes())
 		if err != nil {
 			log.Panicln("Get data from database failed!", err)
@@ -99,7 +104,7 @@ func QueryNodesHandle(w http.ResponseWriter, r *http.Request) {
 		input = append(input, tx.DataHash.String())
 	}
 
-	response := getRank(input, params.Period, params.NumRank)
+	response := getRank(input, uint32(params.Period), params.NumRank)
 
 	message, err := json.Marshal(response)
 	if err != nil {
