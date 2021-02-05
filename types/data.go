@@ -42,7 +42,7 @@ type GetReply struct {
 
 // QueryNodeReq is req param of QueryNodes
 type QueryNodeReq struct {
-	Period  uint32 `json:"period"`
+	Period  int    `json:"period"`
 	NumRank uint32 `json:"numrank"`
 }
 
