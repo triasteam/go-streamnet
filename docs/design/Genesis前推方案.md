@@ -16,6 +16,46 @@ Genesis前推本质就是主链持久化之后将Genesis变更为新的值。
 
 ## 设计方案：
 
+### Genesis前推worker
+
+该worker包含获取genesis和刷新dag graph两个方法。
+
+#### 获取Genesis
+
+该方法需要确保线程安全
+
++ 构建pivotChain
+
++ 获取dag中支链得分最高的交易节点的分数，得分最高的节点是被最多交易节点证实的节点。
+
++ 遍历pivot chain，当pivot chain上的节点得分大于支链最高得分与更新参数之和时，该主链节点即为新的Genesis。
+
++ 更新dag的Genesis节点队列，并保存
+
+  以上步骤可以用如下图表进行说明：
+
+  <待补充>
+
+#### 刷新Dag
+
+当上一步获取的Genesis与当前Genesis节点不一致时，以新的Genesis作为首节点更新dag。
+
++ 计算更新Genesis前的主链。
++ 构建临时dag graph
++ 计算更新Genesis后的主链；
++ 比较前后两条主链，将相同部分进行持久化。
+
+
+
+## 名词解释
+
+主链： 将dag上所有节点按照全拓扑序算法排列成为的一条链，该链包含所有的交易节点。
+
+主链长度： 从Genesis节点开始计算，当Genesis发生变更后该长度是从新的Genesis节点开始计算。
+
+
+
+
 
 
 
