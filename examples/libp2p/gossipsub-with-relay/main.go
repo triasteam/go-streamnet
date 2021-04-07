@@ -1,3 +1,34 @@
+/*
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Juan Batiz-Benet
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This program demonstrate a gossip application using p2p pubsub protocol and
+ * AutoRelay protocol.
+ * With pubsub protocol nodes could be connected and tranlating, with the AutoRelay
+ * Protocol, node behind NAT can also join the network.
+ *
+ * this is the endpoint file .
+ */
 package main
 
 import (
@@ -35,6 +66,11 @@ const (
 	privateName = "priv.pem"
 )
 
+/**
+ * mdns notifee
+ * this object is used for local network
+ * peers discovered by mdns protocol
+ */
 type mdnsNotifee struct {
 	h   host.Host
 	ctx context.Context
@@ -44,6 +80,14 @@ func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	m.h.Connect(m.ctx, pi)
 }
 
+/**
+ *
+ * pem is used to generate a fixed private key
+ * there no need to do it when starting a host
+ * but as result the peer id would change
+ * for perpose of testing, it is serious recommended
+ * to add it.
+ */
 func loadFromPem() (crypto.PrivKey, error) {
 	pwd, _ := os.Getwd()
 	filePath := fmt.Sprintf("%s/%s", pwd, privateName)
@@ -88,29 +132,38 @@ func getOrGeneratePrivateKey() crypto.PrivKey {
 	return priv
 }
 
+// main function
+//
 func main() {
+	// 1. read input arguments
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	cfg, _ := ParseFlags()
 
+	// 2. create transports, not required
 	transports := libp2p.ChainOptions(
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(ws.New),
 	)
 
+	// 3. create muxers, not required
 	muxers := libp2p.ChainOptions(
 		libp2p.Muxer("/yamux/1.0.0", yamux.DefaultTransport),
 		libp2p.Muxer("/mplex/6.7.0", mplex.DefaultTransport),
 	)
 
+	// 4. create security, not required
 	security := libp2p.Security(secio.ID, secio.New)
 
+	// 5. specify listening address, default random port
+	//    used on all ip address
 	listenAddrs := libp2p.ListenAddrStrings(
 		fmt.Sprintf("/ip4/0.0.0.0/tcp/%s", cfg.Port),
 		fmt.Sprintf("/ip4/0.0.0.0/tcp/%s/ws", cfg.Port),
 	)
 
+	// 6. use kaddht for routing
 	var dht *kaddht.IpfsDHT
 	newDHT := func(h host.Host) (routing.PeerRouting, error) {
 		var err error
@@ -119,8 +172,10 @@ func main() {
 	}
 	routing := libp2p.Routing(newDHT)
 
+	// 7. using fixed private key to specify peer id.
 	priv := getOrGeneratePrivateKey()
 
+	// 8. only public ip or dns can be used for relay hop.
 	relayOption := func() config.Option {
 
 		if cfg.RelayType == "hop" {
@@ -146,6 +201,8 @@ func main() {
 
 	}
 
+	// 9. from 2~8 step, we defined the params to create the host.
+	//    by default , there is no need to certain any param.
 	host, err := libp2p.New(
 		ctx,
 		transports,
@@ -175,6 +232,7 @@ func main() {
 		}()
 	}
 
+	// 10. defined it as a gossip subscriber
 	ps, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
 		panic(err)
@@ -226,12 +284,14 @@ func main() {
 		}
 	}()
 
+	// 11. mdns service used for local net peer discovering
 	mdns, err := discovery.NewMdnsService(ctx, host, time.Second*10, "")
 	if err != nil {
 		panic(err)
 	}
 	mdns.RegisterNotifee(&mdnsNotifee{h: host, ctx: ctx})
 
+	// 12. bootstrap dht, required
 	err = dht.Bootstrap(ctx)
 	if err != nil {
 		panic(err)
