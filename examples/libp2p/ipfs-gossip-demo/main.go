@@ -1,3 +1,34 @@
+/*
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Juan Batiz-Benet
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This program demonstrate a gossip application using p2p pubsub protocol and
+ * AutoRelay protocol.
+ * With pubsub protocol nodes could be connected and tranlating, with the AutoRelay
+ * Protocol, node behind NAT can also join the network.
+ *
+ * this file describes how pubsub works
+ */
 // 中继可用于解决不方便暴露到公网的节点通过某一个公网节点建立网络连接。
 // Libp2p提供了一个/libp2p/autorelay的内容发现协议可以将某一个中继发布给其他节点
 // 中继流程：（普通中继演示了由一个位于公网的中继节点和两个位于私网节点构成的简单网络）
