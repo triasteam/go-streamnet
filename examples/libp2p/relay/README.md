@@ -2,7 +2,7 @@
 ### 1. 选择三台及其分别作为中继节点和两台普通节点
 ### 2. 更新代码并编译
 ```
-## cd ~/demo, 如果core版本不是0.6.1需要手动更新该版本核心包： go get -v "github.com/libp2p/go-libp2p-core"@v0.6.1
+## 如果core版本不是0.6.1需要手动更新该版本核心包： go get -v "github.com/libp2p/go-libp2p-core"@v0.6.1
 ## 如果编译失败请将该relay项目移动到 $GOPATH/src/github.com/目录下
 $ go build . -o demo
 ```
