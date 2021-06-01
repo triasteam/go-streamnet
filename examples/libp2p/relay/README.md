@@ -4,7 +4,7 @@
 ```
 ## 如果core版本不是0.6.1需要手动更新该版本核心包： go get -v "github.com/libp2p/go-libp2p-core"@v0.6.1
 ## 如果编译失败请将该relay项目移动到 $GOPATH/src/github.com/目录下
-$ go build . -o demo
+$ go build -o demo .
 ```
 
 ### 3. 启动中继节点
