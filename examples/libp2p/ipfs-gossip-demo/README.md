@@ -90,7 +90,7 @@ git clone https://github.com/triasteam/go-streamnet
 
 cd go-streamnet/examples/libp2p/ipfs-gossip-demo
 
-go build .
+go build main.go flags.go protocol.go pubsub.go chat.pb.go
 
 // 默认监听45759端口，注意种子节点的45759需要开放到公网
 // 初次启动会创建私钥文件，该私钥用于生成固定的peer id
@@ -102,3 +102,31 @@ go build .
 
   - ```-seed``` 指定种子地址，完整格式为 ```/ip4/xxx.xxx.xxx.xxx/tcp/45759/ipfs/qmxxx```
   - ```-port``` 如果开放的外网端口不是45759需要通过该参数指定，一般情况下保持默认即可
+
+## 单机多服务启动
+需要分别启动三个终端
+### 启动第一个"节点"
+```shell
+$ ./main
+my peer is /ip4/127.0.0.1/tcp/45759/ipfs/12D3KooWJ7RPvnEPM6dE9EVHNEJ4vcpdAKAB7uud7SNDJk6AY5VN
+Listening on /ip4/127.0.0.1/tcp/45759
+Listening on /ip4/192.168.50.229/tcp/45759
+connect to host error: failed to dial QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d: no good addresses
+```
+### 启动第二个"节点"
+```shell
+# 私有文件绑定生成peerId，因此需要删除或者重命名之前已经存在的密钥文件
+$ mv priv.pem priv.pem.1
+# 指定种子节点和端口
+$ ./main -seed /ip4/127.0.0.1/tcp/45759/ipfs/12D3KooWJ7RPvnEPM6dE9EVHNEJ4vcpdAKAB7uud7SNDJk6AY5VN -port 45760
+```
+### 启动第三个"节点"
+```shell
+$ mv priv.pem priv.pem.2
+# 此处的种子不一定是第一个节点的多播地址，也可以是其他已经加入网络的节点地址
+$ ./main -seed /ip4/127.0.0.1/tcp/45759/ipfs/12D3KooWJ7RPvnEPM6dE9EVHNEJ4vcpdAKAB7uud7SNDJk6AY5VN -port 45761
+```
+### 通信
+在任意一个输入消息后回车确定，其他终端会同步收到消息。
+
+
