@@ -9,7 +9,7 @@ require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.2
 	github.com/libp2p/go-libp2p v0.12.0
 	github.com/libp2p/go-libp2p-circuit v0.4.0
@@ -36,10 +36,8 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.8
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	golang.org/x/sys v0.0.0-20201117222635-ba5294a509c7 // indirect
-	golang.org/x/tools v0.0.0-20200809012840-6f4f008689da // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.2.5
